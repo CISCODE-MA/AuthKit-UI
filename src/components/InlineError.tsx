@@ -6,7 +6,7 @@ interface Props {
   dismissAfterMs?: number;  // auto-hide (0 = stay)
 }
 
-export const InlineError: React.FC<Props> = ({ message, dismissAfterMs = 4000 }) => {
+export const InlineError: React.FC<Props> = ({ message, dismissAfterMs = 2000000 }) => {
   const [show, setShow] = useState(false);
 
   /* show on message change */

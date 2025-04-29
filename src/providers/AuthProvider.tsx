@@ -32,7 +32,6 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     setUser(null);
     localStorage.removeItem('authToken');
     setExpired(false);
-    resetSessionFlag();
   }
 
   /* ── axios + interceptor ───────────────────────────────── */
@@ -86,6 +85,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     setAccessToken(data.accessToken);
     setUser(decodeToken(data.accessToken));
     localStorage.setItem('authToken', data.accessToken);
+    resetSessionFlag();
   }
 
   const ctx = useMemo(() => ({
