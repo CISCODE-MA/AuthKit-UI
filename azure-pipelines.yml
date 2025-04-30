@@ -32,7 +32,7 @@ steps:
 
     echo "Final .npmrc:"
     cat ~/.npmrc
-  displayName: 'Configure npmrc with Azure Artifacts'
+  displayName: 'Configure npmrc with Azure Artifactss'
 
 # 3) Install dependencies
 - script: npm install
