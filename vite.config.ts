@@ -9,7 +9,7 @@ export default defineConfig({
       fileName: "index",
     },
     rollupOptions: {
-      external: ["react", "react-dom", "react-router", "react-cookie", "axios"],
+      external: ["react", "react-dom", "react-router", "react-cookie", "axios", "jwt-decode"],
     },
   },
 });
