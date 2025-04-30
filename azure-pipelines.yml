@@ -1,2 +1,47 @@
+trigger:
+  branches:
+    include:
+      - main
 
-There was a resource authorization issue: "The pipeline is not valid. Job Job: Step npmAuthenticate input customEndpoint references service connection CISCODEAPPS which could not be found. The service connection does not exist, has been disabled or has not been authorized for use. For authorization details, refer to https://aka.ms/yamlauthz."
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: FE-WEB
+
+steps:
+# 1) Install Node.js
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+  displayName: 'Install Node.js 20.x'
+
+# 2) Create/update ~/.npmrc with both feeds
+- script: |
+    echo "registry=https://registry.npmjs.org/" > ~/.npmrc
+    echo "always-auth=true" >> ~/.npmrc
+
+    #  -- Feed #1: packages-fe --
+    echo "@ciscode-apps:registry=https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/" >> ~/.npmrc
+    echo "//pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/:_authToken=$(TOKEN_ACCESS_AZURE_ARTIFACT)" >> ~/.npmrc
+
+    # Optionally bump version
+    VERSION=$(node -p "require('./package.json').version")
+    NEW_VERSION="${VERSION}-build.$(Build.BuildId)"
+    npm version "$NEW_VERSION" --no-git-tag-version
+
+    echo "Final .npmrc:"
+    cat ~/.npmrc
+  displayName: 'Configure npmrc with Azure Artifacts'
+
+# 3) Install dependencies
+- script: npm install
+  displayName: 'Install dependencies'
+
+# 4) Build the library
+- script: npm run build
+  displayName: 'Build Shared Library'
+
+# 5) Publish the package to private npm feed
+- script: npm publish --access restricted
+  displayName: 'Publish to Private npm Feed'
