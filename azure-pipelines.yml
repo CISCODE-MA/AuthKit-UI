@@ -12,7 +12,7 @@ steps:
 - task: npmAuthenticate@0
   inputs:
     workingFile: .npmrc          # the task writes a temp .npmrc for you
-    customEndpoint: 'CISCODEAPPS' # service-connection to the feed
+    customEndpoint: 'packages-fe' # service-connection to the feed
 
 # 3) Install deps & build
 - script: |
