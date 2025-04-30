@@ -30,8 +30,8 @@ steps:
     NEW_VERSION="${VERSION}-build.$(Build.BuildId)"
     npm version "$NEW_VERSION" --no-git-tag-version
 
-    echo "Final .npmrc:"
-    cat ~/.npmrc
+    npm set registry "https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/"
+
   displayName: 'Configure npmrc with Azure Artifactss'
 
 # 3) Install dependencies
