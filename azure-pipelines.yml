@@ -1,25 +1,2 @@
-steps:
-# provides $(System.AccessToken) to tasks
-- checkout: self
-  persistCredentials: true
 
-# 1) Select Node version
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-
-# 2) Authenticate to the feed and create .npmrc
-- task: npmAuthenticate@0
-  inputs:
-    workingFile: .npmrc          # the task writes a temp .npmrc for you
-    customEndpoint: 'packages-fe' # service-connection to the feed
-
-# 3) Install deps & build
-- script: |
-    npm ci
-    npm run build
-  displayName: 'Install & build'
-
-# 4) Publish
-- script: npm publish --registry https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/
-  displayName: 'Publish to Azure Artifacts'
+There was a resource authorization issue: "The pipeline is not valid. Job Job: Step npmAuthenticate input customEndpoint references service connection CISCODEAPPS which could not be found. The service connection does not exist, has been disabled or has not been authorized for use. For authorization details, refer to https://aka.ms/yamlauthz."
