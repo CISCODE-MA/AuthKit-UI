@@ -2,29 +2,49 @@ import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 
 import { AuthConfigContext } from '../context/AuthConfigContext';
-import { AuthStateCtx }       from '../context/AuthStateContext';
+import { AuthStateCtx, useAuthState } from '../context/AuthStateContext';
 
-import type { AuthConfig }  from '../models/AuthConfig';
+import type { AuthConfig } from '../models/AuthConfig';
 import type { UserProfile } from '../models/User';
 
-import { decodeToken }           from '../utils/jwtHelpers';
+import { decodeToken } from '../utils/jwtHelpers';
 import { attachAuthInterceptor, resetSessionFlag } from '../utils/attachAuthInterceptor';
-import { SessionExpiredModal }   from '../components/SessionExpiredModal';
-import { SignInPage }            from '../pages/auth/SignInPage';
+import { SessionExpiredModal } from '../components/SessionExpiredModal';
+import { SignInPage } from '../pages/auth/SignInPage';
+import {
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from 'react-router';
 
 interface Props {
   config: AuthConfig;
   children: React.ReactNode;
 }
 
+
+/* ---------- tiny in-file route guard ----------------------- */
+const RequireAuth: React.FC<{ children: JSX.Element }> = ({ children }) => {
+  const { isAuthenticated } = useAuthState();
+  const location = useLocation();
+  return isAuthenticated
+    ? children
+    : <Navigate to="/login" state={{ from: location }} replace />;
+};
+/* ----------------------------------------------------------- */
+
 export const AuthProvider: React.FC<Props> = ({ config, children }) => {
+  const navigate = useNavigate();               // get the function
+
   /* ── state ─────────────────────────────────────────────── */
   const [accessToken, setAccessToken] = useState<string | null>(
     () => localStorage.getItem('authToken')
   );
-  const [user,     setUser]   = useState<UserProfile | null>(null);
-  const [booting,  setBooting] = useState(true);
-  const [expired,  setExpired] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [booting, setBooting] = useState(true);
+  const [expired, setExpired] = useState(false);
 
   /* ── hard logout ───────────────────────────────────────── */
   function hardLogout() {
@@ -32,24 +52,25 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     setUser(null);
     localStorage.removeItem('authToken');
     setExpired(false);
+    navigate('/login', { replace: true });
   }
 
   /* ── axios + interceptor ───────────────────────────────── */
   const api = useMemo(() => {
     const client = axios.create({
-      baseURL:        config.baseUrl,
+      baseURL: config.baseUrl,
       withCredentials: true,
     });
 
     attachAuthInterceptor(client, {
-      baseUrl:        config.baseUrl,
+      baseUrl: config.baseUrl,
       getAccessToken: () => accessToken,
       setAccessToken: t => setAccessToken(t),
-      logout:         () => setExpired(true),
+      logout: () => setExpired(true),
     });
 
     return client;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.baseUrl, accessToken]);
 
   /* ── bootstrap (localStorage → refresh) ────────────────── */
@@ -86,6 +107,10 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     setUser(decodeToken(data.accessToken));
     localStorage.setItem('authToken', data.accessToken);
     resetSessionFlag();
+
+    /* go back to page they wanted (or /) */
+    const from = (location as any).state?.from?.pathname || '/';
+    navigate(from, { replace: true });
   }
 
   const ctx = useMemo(() => ({
@@ -98,14 +123,28 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
   }), [accessToken, user, api]);
 
   /* ── render ────────────────────────────────────────────── */
-  if (booting) {
-    return <div className="fixed inset-0 bg-white" />;
-  }
+  // if (booting) {
+  //   return <div className="fixed inset-0 bg-white" />;
+  // }
 
   return (
     <AuthConfigContext.Provider value={config}>
       <AuthStateCtx.Provider value={ctx}>
-        {ctx.isAuthenticated ? children : <SignInPage />}
+        <Routes>
+          {/* public login route */}
+          <Route
+            path="login"
+            element={
+              accessToken
+                ? <Navigate to="/" replace />
+                : <SignInPage />
+            }
+          />
+
+          {/* everything else protected */}
+          <Route path="*" element={<RequireAuth>{children as JSX.Element}</RequireAuth>} />
+        </Routes>
+
         {expired && <SessionExpiredModal onConfirm={hardLogout} />}
       </AuthStateCtx.Provider>
     </AuthConfigContext.Provider>
