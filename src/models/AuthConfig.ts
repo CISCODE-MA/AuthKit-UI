@@ -2,7 +2,7 @@
 import { ColorTheme } from "./ColorTheme";
 
 // src/models/AuthConfig.ts
-export interface AuthConfig {
+export interface AuthConfigProps {
     /** The base URL for your authentication API. */
     baseUrl: string;
 
@@ -12,6 +12,9 @@ export interface AuthConfig {
     colors: ColorTheme
     /** Social or OAuth providers that you want to display. */
     oauthProviders?: string[];
-
-    // Add any other flags, toggles, or parameters you need
+    illustrationUrl?: string; // Add this new prop
+    communityContent?: {
+        title: string;
+        description: string;
+    };
 }

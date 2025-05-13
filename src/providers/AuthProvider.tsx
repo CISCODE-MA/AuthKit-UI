@@ -4,7 +4,7 @@ import axios from 'axios';
 import { AuthConfigContext } from '../context/AuthConfigContext';
 import { AuthStateCtx, useAuthState } from '../context/AuthStateContext';
 
-import type { AuthConfig } from '../models/AuthConfig';
+import type { AuthConfigProps } from '../models/AuthConfig';
 import type { UserProfile } from '../models/User';
 
 import { decodeToken } from '../utils/jwtHelpers';
@@ -20,7 +20,7 @@ import {
 } from 'react-router';
 
 interface Props {
-  config: AuthConfig;
+  config: AuthConfigProps;
   children: React.ReactNode;
 }
 
@@ -137,7 +137,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
             element={
               accessToken
                 ? <Navigate to="/" replace />
-                : <SignInPage />
+                : <SignInPage baseUrl={config.baseUrl} colors={config.colors} />
             }
           />
 

@@ -1,7 +1,6 @@
 // src/context/AuthStateContext.ts
 import { createContext, useContext } from 'react';
 import { UserProfile } from '../models/User';
-import { AuthConfig } from '../models/AuthConfig';
 import { AxiosInstance } from 'axios';
 
 export interface AuthCtx {

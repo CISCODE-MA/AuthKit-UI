@@ -1,37 +1,45 @@
 // src/components/actions/InputField.tsx
 import * as React from "react";
+import { useT } from "@ciscode-model/translate";
 import { InputFieldProps } from "../../models/Type";
 
 /**
  * InputField:
  * - Renders a label + input combination
- * - Accepts props for label, type, placeholder, color (i.e. Tailwind classes), etc.
+ * - Uses translation keys for both `label` and `placeholder`
+ * - Automatically flips text alignment in RTL
  */
 export const InputField: React.FC<InputFieldProps> = ({
-  label,
+  label,          // translation key for the label
   type = "text",
-  placeholder,
+  placeholder,    // translation key for the placeholder
   color = "",
   value,
   onChange,
 }) => {
+  const t = useT("authLib");  // assumes your translations live under the "auth" namespace
+
   return (
-    <div className="mt-8">
+    <div className="mt-8 flex flex-col">
       {label && (
         <label
           htmlFor={`input-${label}`}
-          className="self-start text-base text-black block"
+          className="self-start text-base text-black dark:text-white block ltr:text-left rtl:text-right"
         >
-          {label}
+          {t(label)}
         </label>
       )}
       <input
         id={`input-${label}`}
         type={type}
-        placeholder={placeholder}
+        placeholder={placeholder ? t(placeholder) : undefined}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
-        className={`px-4 py-4 mt-3.5 text-sm font-light rounded-lg border border-solid w-full ${color}`}
+        className={`
+          px-4 py-4 mt-3.5 text-sm font-light rounded-lg border border-solid w-full
+          ltr:text-left rtl:text-right
+          ${color}
+        `}
       />
     </div>
   );
