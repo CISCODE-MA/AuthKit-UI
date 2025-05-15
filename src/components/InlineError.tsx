@@ -1,7 +1,7 @@
 // src/components/actions/InlineError.tsx
 import React, { useEffect, useState } from "react";
 import { AlertTriangle, X } from "lucide-react";
-import { useT } from "@ciscode-model/translate";
+import { useT } from "@ciscode-model/translate-core";
 
 interface Props {
   message: string | null;   // null ⇒ hidden

@@ -1,6 +1,6 @@
 // src/components/actions/SocialButton.tsx
 import * as React from "react";
-import { useT } from "@ciscode-model/translate";
+import { useT } from "@ciscode-model/translate-core";
 import { SocialButtonProps } from "../../models/Type";
 
 export const SocialButton: React.FC<SocialButtonProps> = ({ icon, label }) => {

@@ -9,7 +9,7 @@ import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
 import { InlineError } from "../../components/InlineError";
 import { AuthConfigProps } from "../../models/AuthConfig";
-import { useT } from "@ciscode-model/translate";
+import { useT } from "@ciscode-model/translate-core";
 
 export const SignInPage: React.FC<AuthConfigProps> = () => {
   const t = useT("authLib");
