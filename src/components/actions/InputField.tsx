@@ -1,6 +1,6 @@
 // src/components/actions/InputField.tsx
 import * as React from "react";
-import { useT } from "@ciscode-model/translate-core";
+import { useT } from "@ciscode-template-model/translate-core";
 import { InputFieldProps } from "../../models/Type";
 
 /**

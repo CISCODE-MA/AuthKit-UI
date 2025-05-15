@@ -22,7 +22,7 @@ steps:
     echo "always-auth=true" >> ~/.npmrc
 
     #  -- Feed #1: packages-fe --
-    echo "@ciscode-model:registry=https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/" >> ~/.npmrc
+    echo "@ciscode-template-model:registry=https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/" >> ~/.npmrc
     echo "//pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/:_authToken=$(TOKEN_ACCESS_AZURE_ARTIFACT)" >> ~/.npmrc
 
     # Optionally bump version

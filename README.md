@@ -1,4 +1,4 @@
-# npm link @ciscode-model/translate-core @ciscode-apps/template-fe @ciscode-model/auth-module
+# npm link @ciscode-template-model/translate-core @ciscode-apps/template-fe
 
 # Introduction 
 TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 

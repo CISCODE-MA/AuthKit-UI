@@ -1,5 +1,5 @@
 {
-  "name": "@ciscode-model/auth-module",
+  "name": "@ciscode-template-model/auth-module",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.umd.js",
@@ -21,7 +21,7 @@
   "author": "",
   "license": "ISC",
   "peerDependencies": {
-    "@ciscode-model/translate-core": "^1.0.0-build.486",
+    "@ciscode-template-model/translate-core": "^1.0.0-build.486",
     "axios": "^1.8.4",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.481.0",

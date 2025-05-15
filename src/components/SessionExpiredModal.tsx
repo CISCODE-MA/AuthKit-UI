@@ -1,7 +1,7 @@
 // src/components/auth/SessionExpiredModal.tsx
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { useT } from '@ciscode-model/translate-core';
+import { useT } from '@ciscode-template-model/translate-core';
 
 interface Props {
     onConfirm: () => void; // runs hardLogout()
