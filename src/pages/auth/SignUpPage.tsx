@@ -1,4 +1,3 @@
-// src/pages/auth/SignInPage.tsx
 import React, { useState } from "react";
 import { InputField } from "../../components/actions/InputField";
 import { SocialButton } from "../../components/actions/SocialButton";
@@ -8,13 +7,13 @@ import { toTailwindColorClasses } from "../../utils/colorHelpers";
 import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
 import { InlineError } from "../../components/InlineError";
-import { AuthConfigProps } from "../../models/AuthConfig";
 import { useT } from "@ciscode-template-model/translate-core";
 import { useNavigate } from "react-router";
 
-export const SignInPage: React.FC<AuthConfigProps> = () => {
+export const SignUpPage: React.FC = () => {
   const t = useT("authLib");
   const navigate = useNavigate();
+
   const {
     brandName = t("brandName", { defaultValue: "MyBrand" }),
     colors = { bg: "bg-sky-500", text: "text-white", border: "border-sky-500" },
@@ -30,8 +29,9 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
     },
   } = useAuthConfig();
 
-  const { login } = useAuthState();
+  const { login, api } = useAuthState();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
@@ -51,15 +51,41 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (pending) return;
+
     setError(null);
     setPending(true);
+
     try {
+      // 1) Register the client
+      await api.post("/auth/clients/register", {
+        email,
+        password,
+        name: name || undefined,
+      });
+
+      // 2) Auto-login after successful registration
       await login({ email, password });
     } catch (err: any) {
-      if (err?.response?.status === 401) {
-        setError(t("errors.invalidCredentials"));
+      const status = err?.response?.status;
+      if (status === 400) {
+        setError(
+          err?.response?.data?.message ||
+            t("errors.invalidData", {
+              defaultValue: "Please check the fields and try again.",
+            })
+        );
+      } else if (status === 409) {
+        setError(
+          t("errors.emailInUse", {
+            defaultValue: "This email is already in use.",
+          })
+        );
       } else {
-        setError(t("errors.generic"));
+        setError(
+          t("errors.generic", {
+            defaultValue: "Something went wrong. Please try again.",
+          })
+        );
       }
     } finally {
       setPending(false);
@@ -83,23 +109,35 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
   );
 
   return (
-    <div className={`flex items-center justify-center min-h-screen p-4 ${gradientClass}`}>
+    <div
+      className={`flex items-center justify-center min-h-screen p-4 ${gradientClass}`}
+    >
       <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden">
-        {/* Left Illustration Panel */}
-        <div className={`hidden md:flex md:w-1/2 p-12 flex-col justify-between text-white ${bgClass}`}>
+        {/* Left Illustration Panel (same as SignIn) */}
+        <div
+          className={`hidden md:flex md:w-1/2 p-12 flex-col justify-between text-white ${bgClass}`}
+        >
           <div>
             {logoUrl ? (
               <div className="flex items-center gap-4">
-                <img loading="lazy"
-                  src={logoUrl} alt="Brand Logo" className="bg-white h-8 md:h-22 rounded-lg" />
-                <h2 className="text-sm md:text-2xl font-bold uppercase">{brandName}</h2>
+                <img
+                  loading="lazy"
+                  src={logoUrl}
+                  alt="Brand Logo"
+                  className="bg-white h-8 md:h-22 rounded-lg"
+                />
+                <h2 className="text-sm md:text-2xl font-bold uppercase">
+                  {brandName}
+                </h2>
               </div>
             ) : (
               <h2 className="text-sm md:text-2xl font-bold">{brandName}</h2>
             )}
           </div>
           <div className="flex-1 space-y-4 mt-6 py-4">
-            <h3 className="text-2xl font-semibold leading-tight">{communityContent.title}</h3>
+            <h3 className="text-2xl font-semibold leading-tight">
+              {communityContent.title}
+            </h3>
             <p className="text-base leading-relaxed opacity-90 ltr:text-left rtl:text-right">
               {communityContent.description}
             </p>
@@ -109,7 +147,7 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
               <img
                 loading="lazy"
                 src={illustrationUrl}
-                alt="Sign in illustration"
+                alt="Sign up illustration"
                 className="max-w-sm w-full mx-auto rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300 p-6"
               />
             </div>
@@ -119,7 +157,7 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
         {/* Right Form Panel */}
         <div className="w-full md:w-1/2 p-4 md:p-8 m-auto">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-            {/* Logo for small screens (hidden MD+) */}
+            {/* Logo for small screens */}
             <div className="flex items-center justify-center md:hidden mb-5">
               {logoUrl ? (
                 <img
@@ -133,35 +171,55 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
               )}
             </div>
 
-            {/* Welcome */}
-            <div className="w-full md:w-auto mb-4 md:mb-0 text-center md:text-left
-                    ltr:text-center rtl:text-center md:ltr:text-left md:rtl:text-right">
+            {/* Title / subtitle */}
+            <div
+              className="w-full md:w-auto mb-4 md:mb-0 text-center md:text-left
+                    ltr:text-center rtl:text-center md:ltr:text-left md:rtl:text-right"
+            >
               <p className="text-sm md:text-lg">
-                {t("SignInPage.welcome")}{" "}
+                {t("SignUpPage.welcome", {
+                  defaultValue: "Join",
+                })}{" "}
                 <span className={`font-semibold ${textClass} uppercase`}>
                   {brandName}
                 </span>
               </p>
               <h1 className="text-2xl md:text-4xl font-bold text-gray-800">
-                {t("SignInPage.signIn")}
+                {t("SignUpPage.signUp", {
+                  defaultValue: "Sign up",
+                })}
               </h1>
             </div>
 
-            {/* Sign-up prompt */}
+            {/* Sign-in prompt */}
             <div className="text-sm text-gray-500 text-center md:text-right">
-              {t("SignInPage.noAccount")}
+              {t("SignUpPage.alreadyHaveAccount", {
+                defaultValue: "Already have an account?",
+              })}
               <br />
-              <button type="button" onClick={() => navigate("/signup")} className={textClass}>
-                {t("SignInPage.signUp")}
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className={textClass}
+              >
+                {t("SignUpPage.signIn", { defaultValue: "Sign in" })}
               </button>
             </div>
           </div>
 
-          {error && (
-            <InlineError message={error} />
-          )}
+          {error && <InlineError message={error} />}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
+            <InputField
+              label={t("form.nameLabel", { defaultValue: "Name" })}
+              type="text"
+              placeholder={t("form.namePlaceholder", {
+                defaultValue: "Enter your name",
+              })}
+              color={borderClass}
+              value={name}
+              onChange={setName}
+            />
             <InputField
               label={t("form.emailLabel")}
               type="email"
@@ -178,24 +236,33 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
               value={password}
               onChange={setPassword}
             />
-            <div className="ltr:text-right rtl:text-left">
-              <button className={`text-sm ${textClass}`}>{t("SignInPage.forgotPassword")}</button>
-            </div>
+
             <button
               type="submit"
               disabled={pending}
-              className={`relative flex w-full items-center justify-center gap-2 py-3 rounded-lg font-medium transition-colors ${pending ? "opacity-60 cursor-not-allowed" : ""
-                } ${bgClass} text-white`}
+              className={`relative flex w-full items-center justify-center gap-2 py-3 rounded-lg font-medium transition-colors ${
+                pending ? "opacity-60 cursor-not-allowed" : ""
+              } ${bgClass} text-white`}
             >
               {pending && spinner}
-              {pending ? t("SignInPage.signInSubmitting") : t("SignInPage.signIn")}
+              {pending
+                ? t("SignUpPage.signUpSubmitting", {
+                    defaultValue: "Creating account...",
+                  })
+                : t("SignUpPage.signUp", {
+                    defaultValue: "Sign up",
+                  })}
             </button>
 
             {providerButtons.length > 0 && (
               <>
                 <div className="flex items-center pt-2">
                   <div className={`flex-grow h-px ${bgClass}`} />
-                  <span className={`${textClass} mx-3 text-sm`}>{t("SignInPage.orLoginWith")}</span>
+                  <span className={`${textClass} mx-3 text-sm`}>
+                    {t("SignUpPage.orContinueWith", {
+                      defaultValue: "Or continue with",
+                    })}
+                  </span>
                   <div className={`flex-grow h-px ${bgClass}`} />
                 </div>
                 <div className="flex gap-3 mb-6 justify-center md:justify-start">

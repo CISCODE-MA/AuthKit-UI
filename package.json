@@ -16,7 +16,7 @@
     }
   },
   "scripts": {
-    "build": "vite build & tsc"
+    "build": "vite build && tsc"
   },
   "author": "",
   "license": "ISC",

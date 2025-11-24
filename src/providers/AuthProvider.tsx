@@ -11,13 +11,8 @@ import { decodeToken } from '../utils/jwtHelpers';
 import { attachAuthInterceptor, resetSessionFlag } from '../utils/attachAuthInterceptor';
 import { SessionExpiredModal } from '../components/SessionExpiredModal';
 import { SignInPage } from '../pages/auth/SignInPage';
-import {
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-  useNavigate,
-} from 'react-router';
+import { SignUpPage } from '../pages/auth/SignUpPage';
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router";
 
 interface Props {
   config: AuthConfigProps;
@@ -102,7 +97,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
 
   /* ── manual login ──────────────────────────────────────── */
   async function login(credentials: { email: string; password: string }) {
-    const { data } = await api.post('/auth/login', credentials);
+    const { data } = await api.post('/auth/clients/login', credentials);
     setAccessToken(data.accessToken);
     setUser(decodeToken(data.accessToken));
     localStorage.setItem('authToken', data.accessToken);
@@ -138,6 +133,14 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
               accessToken
                 ? <Navigate to="/" replace />
                 : <SignInPage baseUrl={config.baseUrl} colors={config.colors} />
+            }
+          />
+
+          {/* public signup route */}
+          <Route
+            path="signup"
+            element={
+              accessToken ? <Navigate to="/" replace /> : <SignUpPage />
             }
           />
 
