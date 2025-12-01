@@ -13,12 +13,12 @@ import { SessionExpiredModal } from '../components/SessionExpiredModal';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { SignUpPage } from '../pages/auth/SignUpPage';
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router";
+import { GoogleCallbackPage } from "../pages/auth/GoogleCallbackPage";
 
 interface Props {
   config: AuthConfigProps;
   children: React.ReactNode;
 }
-
 
 /* ---------- tiny in-file route guard ----------------------- */
 const RequireAuth: React.FC<{ children: JSX.Element }> = ({ children }) => {
@@ -31,7 +31,7 @@ const RequireAuth: React.FC<{ children: JSX.Element }> = ({ children }) => {
 /* ----------------------------------------------------------- */
 
 export const AuthProvider: React.FC<Props> = ({ config, children }) => {
-  const navigate = useNavigate();               // get the function
+  const navigate = useNavigate();
 
   /* ── state ─────────────────────────────────────────────── */
   const [accessToken, setAccessToken] = useState<string | null>(
@@ -40,6 +40,37 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [booting, setBooting] = useState(true);
   const [expired, setExpired] = useState(false);
+
+  /* ── Google OAuth callback component (inside AuthProvider so it can touch state) ── */
+  const GoogleOAuthCallback: React.FC = () => {
+    const location = useLocation();
+
+    useEffect(() => {
+      const params = new URLSearchParams(location.search);
+      const tokenFromQuery = params.get('accessToken');
+
+      if (tokenFromQuery) {
+        try {
+          setAccessToken(tokenFromQuery);
+          setUser(decodeToken(tokenFromQuery));
+          localStorage.setItem('authToken', tokenFromQuery);
+          resetSessionFlag();
+        } catch (e) {
+          console.error("Failed to decode or store Google access token:", e);
+        }
+      } else {
+        console.error("No accessToken found in Google OAuth callback URL.");
+      }
+
+      const redirectPath = sessionStorage.getItem('postLoginRedirect') || '/';
+      sessionStorage.removeItem('postLoginRedirect');
+
+      navigate(redirectPath, { replace: true });
+    }, [location.search, navigate]);
+
+    // No UI needed; this route just processes the tokens then redirects.
+    return null;
+  };
 
   /* ── hard logout ───────────────────────────────────────── */
   function hardLogout() {
@@ -95,7 +126,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     init();
   }, [accessToken, config.baseUrl]);
 
-  /* ── manual login ──────────────────────────────────────── */
+  /* ── manual login (email/password client login) ────────── */
   async function login(credentials: { email: string; password: string }) {
     const { data } = await api.post('/auth/clients/login', credentials);
     setAccessToken(data.accessToken);
@@ -103,21 +134,25 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     localStorage.setItem('authToken', data.accessToken);
     resetSessionFlag();
 
-    /* go back to page they wanted (or /) */
-    const from = (location as any).state?.from?.pathname || '/';
-    navigate(from, { replace: true });
+    // NOTE: this previously tried to use `location.state.from`
+    // but `location` here is the global, not React Router's.
+    // For simplicity we send the user to "/" after manual login.
+    navigate('/', { replace: true });
   }
 
-  const ctx = useMemo(() => ({
-    isAuthenticated: !!accessToken,
-    accessToken,
-    user,
-    login,
-    logout: hardLogout,
-    api,
-  }), [accessToken, user, api]);
+  const ctx = useMemo(
+    () => ({
+      isAuthenticated: !!accessToken,
+      accessToken,
+      user,
+      login,
+      logout: hardLogout,
+      api,
+    }),
+    [accessToken, user, api]
+  );
 
-  /* ── render ────────────────────────────────────────────── */
+  // Optional boot screen
   // if (booting) {
   //   return <div className="fixed inset-0 bg-white" />;
   // }
@@ -144,8 +179,23 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
             }
           />
 
+          {/* Google OAuth callback route */}
+          <Route
+            path="oauth/google/callback"
+            element={<GoogleCallbackPage  />}
+          />
+
+          {/* Microsoft OAuth callback route */}
+          <Route 
+            path="/oauth/microsoft/callback"
+            element={<GoogleCallbackPage />} 
+          />
+
           {/* everything else protected */}
-          <Route path="*" element={<RequireAuth>{children as JSX.Element}</RequireAuth>} />
+          <Route
+            path="*"
+            element={<RequireAuth>{children as JSX.Element}</RequireAuth>}
+          />
         </Routes>
 
         {expired && <SessionExpiredModal onConfirm={hardLogout} />}
