@@ -73,10 +73,21 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
   };
 
   /* ── hard logout ───────────────────────────────────────── */
-  function hardLogout() {
+  async function hardLogout() {
+    try {
+      // Ask backend to clear the HttpOnly refreshToken cookie
+      await api.post('/auth/logout');
+    } catch (e) {
+      // Even if backend call fails, still clear local session
+      console.warn('Logout endpoint failed, proceeding with local logout:', e);
+    }
+  
     setAccessToken(null);
     setUser(null);
+  
     localStorage.removeItem('authToken');
+    sessionStorage.clear();
+  
     setExpired(false);
     navigate('/login', { replace: true });
   }
@@ -148,6 +159,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
       login,
       logout: hardLogout,
       api,
+      setUser,
     }),
     [accessToken, user, api]
   );

@@ -7,6 +7,7 @@ export interface RoleWithPerms {
 export interface UserProfile {
   id: string;
   email: string;
+  name?: string | null;
   /** e.g. ["admin", "manager"] */
   roles: string[];
   permissions?: string[]; // or a more complex shape // ["menus:create","menus:read", …]
