@@ -8,11 +8,12 @@ import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
 import { InlineError } from "../../components/InlineError";
 import { useT } from "@ciscode-template-model/translate-core";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
 export const SignUpPage: React.FC = () => {
   const t = useT("authLib");
   const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     brandName = t("brandName", { defaultValue: "MyBrand" }),
@@ -27,6 +28,7 @@ export const SignUpPage: React.FC = () => {
       title: t("community.title"),
       description: t("community.description"),
     },
+    baseUrl, // IMPORTANT: used for OAuth redirect (same as SignIn)
   } = useAuthConfig();
 
   const { login, api } = useAuthState();
@@ -38,12 +40,17 @@ export const SignUpPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const allProvidersData = {
-    google: { icon: googleIcon, label: t("social.google") },
-    microsoft: { icon: microsoftIcon, label: t("social.microsoft") },
-  };
+    google: { icon: googleIcon, label: "social.google" },
+    microsoft: { icon: microsoftIcon, label: "social.microsoft" },
+  } as const;
+
   const providerButtons = oauthProviders
     .filter((p) => p in allProvidersData)
-    .map((p) => allProvidersData[p as keyof typeof allProvidersData]);
+    .map((p) => ({
+      id: p,
+      icon: allProvidersData[p as keyof typeof allProvidersData].icon,
+      label: allProvidersData[p as keyof typeof allProvidersData].label,
+    }));
 
   const { bgClass, textClass, borderClass } = toTailwindColorClasses(colors);
   const gradientClass = `${bgClass} bg-gradient-to-r from-white/10 via-white/0 to-white/0`;
@@ -92,6 +99,44 @@ export const SignUpPage: React.FC = () => {
     }
   }
 
+  function handleProviderClick(providerId: string) {
+    if (!baseUrl) {
+      console.error("Auth baseUrl is not configured.");
+      return;
+    }
+
+    // Where to go AFTER successful OAuth login.
+    const from =
+      (location.state as any)?.from?.pathname ||
+      (location.state as any)?.from ||
+      "/";
+
+    // Save post-login redirect so callback route can restore it.
+    sessionStorage.setItem("postLoginRedirect", from);
+
+    if (providerId === "google") {
+      const callbackPath = "/oauth/google/callback";
+      const callbackUrl = `${window.location.origin}${callbackPath}`;
+
+      const url = new URL(`${baseUrl}/auth/google`);
+      url.searchParams.set("redirect", callbackUrl);
+
+      window.location.href = url.toString();
+      return;
+    }
+
+    if (providerId === "microsoft") {
+      const callbackPath = "/oauth/microsoft/callback";
+      const callbackUrl = `${window.location.origin}${callbackPath}`;
+
+      const url = new URL(`${baseUrl}/auth/microsoft`);
+      url.searchParams.set("redirect", callbackUrl);
+
+      window.location.href = url.toString();
+      return;
+    }
+  }
+
   const spinner = (
     <svg
       className="h-4 w-4 animate-spin stroke-current"
@@ -109,14 +154,10 @@ export const SignUpPage: React.FC = () => {
   );
 
   return (
-    <div
-      className={`flex items-center justify-center min-h-screen p-4 ${gradientClass}`}
-    >
+    <div className={`flex items-center justify-center min-h-screen p-4 ${gradientClass}`}>
       <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden">
-        {/* Left Illustration Panel (same as SignIn) */}
-        <div
-          className={`hidden md:flex md:w-1/2 p-12 flex-col justify-between text-white ${bgClass}`}
-        >
+        {/* Left Illustration Panel */}
+        <div className={`hidden md:flex md:w-1/2 p-12 flex-col justify-between text-white ${bgClass}`}>
           <div>
             {logoUrl ? (
               <div className="flex items-center gap-4">
@@ -172,22 +213,15 @@ export const SignUpPage: React.FC = () => {
             </div>
 
             {/* Title / subtitle */}
-            <div
-              className="w-full md:w-auto mb-4 md:mb-0 text-center md:text-left
-                    ltr:text-center rtl:text-center md:ltr:text-left md:rtl:text-right"
-            >
+            <div className="w-full md:w-auto mb-4 md:mb-0 text-center md:text-left ltr:text-center rtl:text-center md:ltr:text-left md:rtl:text-right">
               <p className="text-sm md:text-lg">
-                {t("SignUpPage.welcome", {
-                  defaultValue: "Join",
-                })}{" "}
+                {t("SignUpPage.welcome", { defaultValue: "Join" })}{" "}
                 <span className={`font-semibold ${textClass} uppercase`}>
                   {brandName}
                 </span>
               </p>
               <h1 className="text-2xl md:text-4xl font-bold text-gray-800">
-                {t("SignUpPage.signUp", {
-                  defaultValue: "Sign up",
-                })}
+                {t("SignUpPage.signUp", { defaultValue: "Sign up" })}
               </h1>
             </div>
 
@@ -249,9 +283,7 @@ export const SignUpPage: React.FC = () => {
                 ? t("SignUpPage.signUpSubmitting", {
                     defaultValue: "Creating account...",
                   })
-                : t("SignUpPage.signUp", {
-                    defaultValue: "Sign up",
-                  })}
+                : t("SignUpPage.signUp", { defaultValue: "Sign up" })}
             </button>
 
             {providerButtons.length > 0 && (
@@ -265,9 +297,17 @@ export const SignUpPage: React.FC = () => {
                   </span>
                   <div className={`flex-grow h-px ${bgClass}`} />
                 </div>
+
                 <div className="flex gap-3 mb-6 justify-center md:justify-start">
-                  {providerButtons.map((btn, i) => (
-                    <SocialButton key={i} icon={btn.icon} label={btn.label} />
+                  {providerButtons.map((btn) => (
+                    <button
+                      key={btn.id}
+                      type="button"
+                      onClick={() => handleProviderClick(btn.id)}
+                      className="flex-1"
+                    >
+                      <SocialButton icon={btn.icon} label={btn.label} />
+                    </button>
                   ))}
                 </div>
               </>
