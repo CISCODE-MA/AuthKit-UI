@@ -16,43 +16,45 @@ steps:
     versionSpec: '20.x'
   displayName: 'Install Node.js 20.x'
 
-# 2) Configure npmrc for Azure Artifacts (both scopes)
+# 2) Create ~/.npmrc with the correct scope->feed routing (NO token here)
 - script: |
     set -euo pipefail
 
-    # Default registry can remain npmjs, but scoped packages must go to Azure Artifacts
     echo "registry=https://registry.npmjs.org/" > ~/.npmrc
     echo "always-auth=true" >> ~/.npmrc
 
-    # Azure Artifacts feed: packages-fe
     FEED_REGISTRY="https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/"
 
-    # Scope #1: @ciscode-ui (THIS package)
+    # Scopes that must resolve from Azure Artifacts
     echo "@ciscode-ui:registry=${FEED_REGISTRY}" >> ~/.npmrc
-
-    # Scope #2: @ciscode-template-model (dependencies)
     echo "@ciscode-template-model:registry=${FEED_REGISTRY}" >> ~/.npmrc
 
-    # Auth token for the feed
-    echo "//pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/:_authToken=$(TOKEN_ACCESS_AZURE_ARTIFACT)" >> ~/.npmrc
-
-    # Optional version bump
-    VERSION=$(node -p "require('./package.json').version")
-    NEW_VERSION="${VERSION}-build.$(Build.BuildId)"
-    npm version "$NEW_VERSION" --no-git-tag-version
-
-    echo "Final .npmrc:"
+    echo "Final .npmrc (without secrets):"
     cat ~/.npmrc
-  displayName: 'Configure npmrc for Azure Artifacts'
+  displayName: 'Configure npm scopes (no secrets)'
 
-# 3) Install dependencies
+# 3) Authenticate to Azure Artifacts feed (this injects the right secret auth)
+- task: npmAuthenticate@0
+  inputs:
+    workingFile: ~/.npmrc
+  displayName: 'Authenticate to Azure Artifacts'
+
+# 4) Install dependencies
 - script: npm install
   displayName: 'Install dependencies'
 
-# 4) Build the library
+# 5) Build the library
 - script: npm run build
   displayName: 'Build library'
 
-# 5) Publish to Azure Artifacts feed (packages-fe)
+# 6) Bump version (kept same behavior as before)
+- script: |
+    set -euo pipefail
+    VERSION=$(node -p "require('./package.json').version")
+    NEW_VERSION="${VERSION}-build.$(Build.BuildId)"
+    npm version "$NEW_VERSION" --no-git-tag-version
+  displayName: 'Bump version'
+
+# 7) Publish to Azure Artifacts (packages-fe)
 - script: npm publish
   displayName: 'Publish to Azure Artifacts feed'
