@@ -1,5 +1,5 @@
 {
-  "name": "@ciscode-template-model/auth-module",
+  "name": "@ciscode-ui/Authentication-Kit",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.umd.js",
