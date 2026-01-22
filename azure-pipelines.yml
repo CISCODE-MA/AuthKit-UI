@@ -16,42 +16,32 @@ steps:
     versionSpec: '20.x'
   displayName: 'Install Node.js 20.x'
 
-# 2) Create project-level .npmrc with all required feeds
+# 2) Configure npm to use Azure Artifacts for @ciscode-ui
 - script: |
-    cat > .npmrc << 'EOF'
-    registry=https://registry.npmjs.org/
-    always-auth=true
+    echo "registry=https://registry.npmjs.org/" > ~/.npmrc
+    echo "always-auth=true" >> ~/.npmrc
 
-    @ciscode-template-model:registry=https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/
-    @ciscodeapps-template:registry=https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/testfeed/npm/registry/
-    @ciscodeapps:registry=https://pkgs.dev.azure.com/CISCODEAPPS/RestoSoft/_packaging/menufeed/npm/registry/
-    EOF
+    # Azure Artifacts feed for @ciscode-ui
+    echo "@ciscode-ui:registry=https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/" >> ~/.npmrc
+    echo "//pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/:_authToken=$(TOKEN_ACCESS_AZURE_ARTIFACT)" >> ~/.npmrc
 
-    echo "Project .npmrc created:"
-    cat .npmrc
-  displayName: 'Create .npmrc with Azure Artifacts feeds'
-
-# 3) Authenticate .npmrc against Azure Artifacts (CRITICAL STEP)
-- task: npmAuthenticate@0
-  displayName: 'Authenticate to Azure Artifacts'
-  inputs:
-    workingFile: '.npmrc'
-
-# 4) Bump version (build metadata)
-- script: |
+    # Optional version bump
     VERSION=$(node -p "require('./package.json').version")
     NEW_VERSION="${VERSION}-build.$(Build.BuildId)"
     npm version "$NEW_VERSION" --no-git-tag-version
-  displayName: 'Bump package version'
 
-# 5) Install dependencies (NOW AUTH WILL WORK)
+    echo "Final .npmrc:"
+    cat ~/.npmrc
+  displayName: 'Configure npmrc for Azure Artifacts'
+
+# 3) Install dependencies
 - script: npm install
   displayName: 'Install dependencies'
 
-# 6) Build the library
+# 4) Build the library
 - script: npm run build
-  displayName: 'Build Shared Library'
+  displayName: 'Build library'
 
-# 7) Publish the package
-- script: npm publish --access restricted
-  displayName: 'Publish to Private npm Feed'
+# 5) Publish to Azure Artifacts (packages-fe)
+- script: npm publish
+  displayName: 'Publish to Azure Artifacts feed'
