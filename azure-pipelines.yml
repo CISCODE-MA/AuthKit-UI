@@ -16,38 +16,44 @@ steps:
     versionSpec: '20.x'
   displayName: 'Install Node.js 20.x'
 
-# 2) Create ~/.npmrc with the correct scope->feed routing (NO token here)
+# 2) Create .npmrc in the REPO workspace (not ~)
 - script: |
     set -euo pipefail
 
-    echo "registry=https://registry.npmjs.org/" > ~/.npmrc
-    echo "always-auth=true" >> ~/.npmrc
+    NPMRC_PATH="$(Build.SourcesDirectory)/.npmrc"
+
+    echo "registry=https://registry.npmjs.org/" > "$NPMRC_PATH"
+    echo "always-auth=true" >> "$NPMRC_PATH"
 
     FEED_REGISTRY="https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/"
 
     # Scopes that must resolve from Azure Artifacts
-    echo "@ciscode-ui:registry=${FEED_REGISTRY}" >> ~/.npmrc
-    echo "@ciscode-template-model:registry=${FEED_REGISTRY}" >> ~/.npmrc
+    echo "@ciscode-ui:registry=${FEED_REGISTRY}" >> "$NPMRC_PATH"
+    echo "@ciscode-template-model:registry=${FEED_REGISTRY}" >> "$NPMRC_PATH"
 
-    echo "Final .npmrc (without secrets):"
-    cat ~/.npmrc
-  displayName: 'Configure npm scopes (no secrets)'
+    echo "Final .npmrc (no secrets):"
+    cat "$NPMRC_PATH"
+  displayName: 'Configure .npmrc (workspace)'
 
-# 3) Authenticate to Azure Artifacts feed (this injects the right secret auth)
+# 3) Authenticate to Azure Artifacts (injects credentials into that .npmrc)
 - task: npmAuthenticate@0
   inputs:
-    workingFile: ~/.npmrc
+    workingFile: '$(Build.SourcesDirectory)/.npmrc'
   displayName: 'Authenticate to Azure Artifacts'
 
-# 4) Install dependencies
-- script: npm install
+# 4) Install dependencies using that .npmrc
+- script: |
+    set -euo pipefail
+    npm install --userconfig "$(Build.SourcesDirectory)/.npmrc"
   displayName: 'Install dependencies'
 
 # 5) Build the library
-- script: npm run build
+- script: |
+    set -euo pipefail
+    npm run build --userconfig "$(Build.SourcesDirectory)/.npmrc"
   displayName: 'Build library'
 
-# 6) Bump version (kept same behavior as before)
+# 6) Bump version (no git tag)
 - script: |
     set -euo pipefail
     VERSION=$(node -p "require('./package.json').version")
@@ -55,6 +61,8 @@ steps:
     npm version "$NEW_VERSION" --no-git-tag-version
   displayName: 'Bump version'
 
-# 7) Publish to Azure Artifacts (packages-fe)
-- script: npm publish
+# 7) Publish to Azure Artifacts (uses same .npmrc)
+- script: |
+    set -euo pipefail
+    npm publish --userconfig "$(Build.SourcesDirectory)/.npmrc"
   displayName: 'Publish to Azure Artifacts feed'
