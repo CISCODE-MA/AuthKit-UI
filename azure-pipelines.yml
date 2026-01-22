@@ -16,13 +16,24 @@ steps:
     versionSpec: '20.x'
   displayName: 'Install Node.js 20.x'
 
-# 2) Configure npm to use Azure Artifacts for @ciscode-ui
+# 2) Configure npmrc for Azure Artifacts (both scopes)
 - script: |
+    set -euo pipefail
+
+    # Default registry can remain npmjs, but scoped packages must go to Azure Artifacts
     echo "registry=https://registry.npmjs.org/" > ~/.npmrc
     echo "always-auth=true" >> ~/.npmrc
 
-    # Azure Artifacts feed for @ciscode-ui
-    echo "@ciscode-ui:registry=https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/" >> ~/.npmrc
+    # Azure Artifacts feed: packages-fe
+    FEED_REGISTRY="https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/"
+
+    # Scope #1: @ciscode-ui (THIS package)
+    echo "@ciscode-ui:registry=${FEED_REGISTRY}" >> ~/.npmrc
+
+    # Scope #2: @ciscode-template-model (dependencies)
+    echo "@ciscode-template-model:registry=${FEED_REGISTRY}" >> ~/.npmrc
+
+    # Auth token for the feed
     echo "//pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/:_authToken=$(TOKEN_ACCESS_AZURE_ARTIFACT)" >> ~/.npmrc
 
     # Optional version bump
@@ -42,6 +53,6 @@ steps:
 - script: npm run build
   displayName: 'Build library'
 
-# 5) Publish to Azure Artifacts (packages-fe)
+# 5) Publish to Azure Artifacts feed (packages-fe)
 - script: npm publish
   displayName: 'Publish to Azure Artifacts feed'
