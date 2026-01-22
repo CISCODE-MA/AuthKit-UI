@@ -1,5 +1,5 @@
 {
-  "name": "@ciscode-ui/Authentication-Kit",
+  "name": "@ciscode-ui/authentication-kit",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.umd.js",
