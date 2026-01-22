@@ -16,32 +16,42 @@ steps:
     versionSpec: '20.x'
   displayName: 'Install Node.js 20.x'
 
-# 2) Create/update ~/.npmrc with both feeds
+# 2) Create project-level .npmrc with all required feeds
 - script: |
-    echo "registry=https://registry.npmjs.org/" > ~/.npmrc
-    echo "always-auth=true" >> ~/.npmrc
+    cat > .npmrc << 'EOF'
+    registry=https://registry.npmjs.org/
+    always-auth=true
 
-    #  -- Feed #1: packages-fe --
-    echo "@ciscode-template-model:registry=https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/" >> ~/.npmrc
-    echo "//pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/:_authToken=$(TOKEN_ACCESS_AZURE_ARTIFACT)" >> ~/.npmrc
+    @ciscode-template-model:registry=https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/packages-fe/npm/registry/
+    @ciscodeapps-template:registry=https://pkgs.dev.azure.com/CISCODEAPPS/Templates/_packaging/testfeed/npm/registry/
+    @ciscodeapps:registry=https://pkgs.dev.azure.com/CISCODEAPPS/RestoSoft/_packaging/menufeed/npm/registry/
+    EOF
 
-    # Optionally bump version
+    echo "Project .npmrc created:"
+    cat .npmrc
+  displayName: 'Create .npmrc with Azure Artifacts feeds'
+
+# 3) Authenticate .npmrc against Azure Artifacts (CRITICAL STEP)
+- task: npmAuthenticate@0
+  displayName: 'Authenticate to Azure Artifacts'
+  inputs:
+    workingFile: '.npmrc'
+
+# 4) Bump version (build metadata)
+- script: |
     VERSION=$(node -p "require('./package.json').version")
     NEW_VERSION="${VERSION}-build.$(Build.BuildId)"
     npm version "$NEW_VERSION" --no-git-tag-version
+  displayName: 'Bump package version'
 
-    echo "Final .npmrc:"
-    cat ~/.npmrc
-  displayName: 'Configure npmrc with Azure Artifacts'
-
-# 3) Install dependencies
+# 5) Install dependencies (NOW AUTH WILL WORK)
 - script: npm install
   displayName: 'Install dependencies'
 
-# 4) Build the library
+# 6) Build the library
 - script: npm run build
   displayName: 'Build Shared Library'
 
-# 5) Publish the package to private npm feed
+# 7) Publish the package
 - script: npm publish --access restricted
   displayName: 'Publish to Private npm Feed'
