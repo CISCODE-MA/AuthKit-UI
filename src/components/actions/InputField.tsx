@@ -1,6 +1,5 @@
 // src/components/actions/InputField.tsx
 import * as React from "react";
-import { useT } from "@ciscode/ui-translate-core";
 import { InputFieldProps } from "../../models/Type";
 
 /**
@@ -10,29 +9,29 @@ import { InputFieldProps } from "../../models/Type";
  * - Automatically flips text alignment in RTL
  */
 export const InputField: React.FC<InputFieldProps> = ({
-  label,          // translation key for the label
+  label,
   type = "text",
-  placeholder,    // translation key for the placeholder
+  placeholder,
   color = "",
   value,
   onChange,
 }) => {
-  const t = useT("authLib");  // assumes your translations live under the "auth" namespace
+  const inputId = React.useId();
 
   return (
     <div className="mt-8 flex flex-col">
       {label && (
         <label
-          htmlFor={`input-${label}`}
+          htmlFor={inputId}
           className="self-start text-base text-black dark:text-white block ltr:text-left rtl:text-right"
         >
-          {t(label)}
+          {label}
         </label>
       )}
       <input
-        id={`input-${label}`}
+        id={inputId}
         type={type}
-        placeholder={placeholder ? t(placeholder) : undefined}
+        placeholder={placeholder || undefined}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         className={`

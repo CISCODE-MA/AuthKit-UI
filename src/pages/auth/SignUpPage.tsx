@@ -40,8 +40,8 @@ export const SignUpPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const allProvidersData = {
-    google: { icon: googleIcon, label: "social.google" },
-    microsoft: { icon: microsoftIcon, label: "social.microsoft" },
+    google: { icon: googleIcon, label: t("social.google") },
+    microsoft: { icon: microsoftIcon, label: t("social.microsoft") },
   } as const;
 
   const providerButtons = oauthProviders
