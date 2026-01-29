@@ -139,7 +139,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
 
   /* ── manual login (email/password client login) ────────── */
   async function login(credentials: { email: string; password: string }) {
-    const { data } = await api.post('/auth/clients/login', credentials);
+    const { data } = await api.post('/api/auth/login', credentials);
     setAccessToken(data.accessToken);
     setUser(decodeToken(data.accessToken));
     localStorage.setItem('authToken', data.accessToken);
