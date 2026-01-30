@@ -9,7 +9,8 @@ import { useAuthState } from "../../context/AuthStateContext";
 import { InlineError } from "../../components/InlineError";
 import { AuthConfigProps } from "../../models/AuthConfig";
 import { useT } from "@ciscode/ui-translate-core";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom"
 
 export const SignInPage: React.FC<AuthConfigProps> = () => {
   const t = useT("authLib");
@@ -232,9 +233,7 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
               onChange={setPassword}
             />
             <div className="ltr:text-right rtl:text-left">
-              <button className={`text-sm ${textClass}`}>
-                {t("SignInPage.forgotPassword")}
-              </button>
+              <Link to="/forgot-password" className={textClass}>{t("SignInPage.forgotPassword")}</Link>
             </div>
             <button
               type="submit"
