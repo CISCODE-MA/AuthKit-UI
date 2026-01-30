@@ -8,7 +8,7 @@ import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
 import { InlineError } from "../../components/InlineError";
 import { useT } from "@ciscode/ui-translate-core";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export const SignUpPage: React.FC = () => {
   const t = useT("authLib");

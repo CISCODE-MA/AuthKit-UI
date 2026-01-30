@@ -7,6 +7,7 @@ export default defineConfig({
       entry: resolve(__dirname, "src/index.ts"),
       name: "ciscode-model",
       fileName: "index",
+      formats: ["es", "umd"],
     },
     rollupOptions: {
       external: [
@@ -17,8 +18,22 @@ export default defineConfig({
         "react-cookie",
         "axios",
         "jwt-decode",
-        "@ciscode/ui-translate-core"
+        "@ciscode/ui-translate-core",
+        "lucide-react",
       ],
+      output: {
+        globals: {
+          react: "React",
+          "react-dom": "ReactDOM",
+          "react-router": "ReactRouter",
+          "react-router-dom": "ReactRouterDOM",
+          "react-cookie": "ReactCookie",
+          axios: "axios",
+          "jwt-decode": "jwt_decode",
+          "@ciscode/ui-translate-core": "CISCODETranslateCore",
+          "lucide-react": "LucideReact",
+        },
+      },
     },
   },
 });
