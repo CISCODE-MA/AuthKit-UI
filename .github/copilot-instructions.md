@@ -168,6 +168,100 @@ const login = async (email, password) => {
 - ✅ Focus management
 - ✅ Error announcements
 
+### 4. Export Strategy
+
+**Export ONLY public API:**
+```typescript
+// src/index.ts - Public exports
+export { LoginForm } from './components/LoginForm';
+export { RegisterForm } from './components/RegisterForm';
+export { ProtectedRoute } from './components/ProtectedRoute';
+export { AuthProvider } from './context/AuthProvider';
+
+// Hooks
+export { useAuth } from './hooks/use-auth';
+export { useProtectedRoute } from './hooks/use-protected-route';
+
+// Types (for TypeScript users)
+export type { 
+  LoginFormProps, 
+  RegisterFormProps,
+  AuthProviderProps,
+  User,
+  AuthState 
+} from './types';
+
+// ❌ NEVER export internal utilities
+// export { validateEmail } from './utils/validation'; // FORBIDDEN
+```
+
+**Rationale:**
+- Components = public UI API
+- Hooks = public logic API
+- Types = TypeScript contracts
+- Internal utils = implementation details
+
+---
+
+## 🔄 Workflow & Task Management
+
+### Task-Driven Development (UI Module)
+
+**1. Branch Creation:**
+```bash
+feature/UI-MODULE-123-add-password-strength
+bugfix/UI-MODULE-456-fix-form-validation
+refactor/UI-MODULE-789-extract-input-component
+```
+
+**2. Task Documentation:**
+Create task file:
+```
+docs/tasks/active/UI-MODULE-123-add-password-strength.md
+```
+
+**Task structure:**
+```markdown
+# UI-MODULE-123: Add Password Strength Indicator
+
+## Description
+Visual feedback for password strength during registration
+
+## Implementation Details
+- Component: PasswordStrength.tsx
+- Uses zxcvbn library for strength calculation
+- Accessible with ARIA live regions
+
+## Files Modified
+- src/components/RegisterForm/RegisterForm.tsx
+- src/components/PasswordStrength/PasswordStrength.tsx (new)
+
+## Breaking Changes
+- None (backward compatible)
+
+## Accessibility
+- ARIA live region announces strength changes
+- Color-blind friendly indicators
+```
+
+**3. On Release:**
+Move to:
+```
+docs/tasks/archive/by-release/v2.0.0/UI-MODULE-123-add-password-strength.md
+```
+
+### Development Workflow
+
+**Simple changes:**
+- Implement → Test → Update docs → Update CHANGELOG
+
+**Complex changes:**
+- Discuss approach → Implement → Test accessibility → Update docs → CHANGELOG → Version bump
+
+**When blocked:**
+- **DO**: Ask immediately
+- **DON'T**: Break component APIs without approval
+
 ---
 
 ## 🎨 Component Patterns
