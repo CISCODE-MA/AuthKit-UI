@@ -33,11 +33,14 @@ export const SignUpPage: React.FC = () => {
 
   const { login, api } = useAuthState();
 
-  const [name, setName] = useState("");
+  const [fname, setFname] = useState("");
+  const [lname, setLname] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [agreed, setAgreed] = useState(false);
 
   const allProvidersData = {
     google: { icon: googleIcon, label: t("social.google") },
@@ -63,11 +66,12 @@ export const SignUpPage: React.FC = () => {
     setPending(true);
 
     try {
-      // 1) Register the client
-      await api.post("/auth/clients/register", {
+      // 1) Register the user
+      await api.post("/api/auth/register", {
+        fullname: { fname, lname },
+        username,
         email,
         password,
-        name: name || undefined,
       });
 
       // 2) Auto-login after successful registration
@@ -77,9 +81,9 @@ export const SignUpPage: React.FC = () => {
       if (status === 400) {
         setError(
           err?.response?.data?.message ||
-            t("errors.invalidData", {
-              defaultValue: "Please check the fields and try again.",
-            })
+          t("errors.invalidData", {
+            defaultValue: "Please check the fields and try again.",
+          })
         );
       } else if (status === 409) {
         setError(
@@ -244,15 +248,31 @@ export const SignUpPage: React.FC = () => {
           {error && <InlineError message={error} />}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="flex gap-2">
+              <InputField
+                label={t("form.fnameLabel", { defaultValue: "First Name" })}
+                type="text"
+                placeholder={t("form.fnamePlaceholder", { defaultValue: "Enter your first name" })}
+                color={borderClass}
+                value={fname}
+                onChange={setFname}
+              />
+              <InputField
+                label={t("form.lnameLabel", { defaultValue: "Last Name" })}
+                type="text"
+                placeholder={t("form.lnamePlaceholder", { defaultValue: "Enter your last name" })}
+                color={borderClass}
+                value={lname}
+                onChange={setLname}
+              />
+            </div>
             <InputField
-              label={t("form.nameLabel", { defaultValue: "Name" })}
+              label={t("form.usernameLabel", { defaultValue: "Username" })}
               type="text"
-              placeholder={t("form.namePlaceholder", {
-                defaultValue: "Enter your name",
-              })}
+              placeholder={t("form.usernamePlaceholder", { defaultValue: "Choose a username" })}
               color={borderClass}
-              value={name}
-              onChange={setName}
+              value={username}
+              onChange={setUsername}
             />
             <InputField
               label={t("form.emailLabel")}
@@ -271,18 +291,30 @@ export const SignUpPage: React.FC = () => {
               onChange={setPassword}
             />
 
+
+            <div className="flex items-center gap-2">
+              <input
+                id="agree"
+                type="checkbox"
+                checked={agreed}
+                onChange={e => setAgreed(e.target.checked)}
+                className="form-checkbox"
+              />
+              <label htmlFor="agree" className="text-sm">
+                I agree to the <span className="underline cursor-pointer">terms and conditions</span> (placeholder)
+              </label>
+            </div>
+
             <button
               type="submit"
               disabled={pending}
-              className={`relative flex w-full items-center justify-center gap-2 py-3 rounded-lg font-medium transition-colors ${
-                pending ? "opacity-60 cursor-not-allowed" : ""
-              } ${bgClass} text-white`}
+              className={`relative flex w-full items-center justify-center gap-2 py-3 rounded-lg font-medium transition-colors ${pending ? "opacity-60 cursor-not-allowed" : ""} ${bgClass} text-white`}
             >
               {pending && spinner}
               {pending
                 ? t("SignUpPage.signUpSubmitting", {
-                    defaultValue: "Creating account...",
-                  })
+                  defaultValue: "Creating account...",
+                })
                 : t("SignUpPage.signUp", { defaultValue: "Sign up" })}
             </button>
 
