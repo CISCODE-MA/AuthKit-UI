@@ -393,7 +393,6 @@ npm version major  # Breaking changes (x.0.0)
 # Then push:
 git push && git push --tags
 ```
-
 ---
 
 ## 🚫 Restrictions
