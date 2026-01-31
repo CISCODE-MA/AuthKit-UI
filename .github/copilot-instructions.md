@@ -250,6 +250,44 @@ Move to:
 docs/tasks/archive/by-release/v2.0.0/UI-MODULE-123-add-password-strength.md
 ```
 
+### Git Flow - UI Module
+
+**Branch Structure:**
+- `master` - Production releases only
+- `develop` - Active development
+- `feature/UI-MODULE-*` - New components/features
+- `bugfix/UI-MODULE-*` - Bug fixes
+
+**Workflow:**
+```bash
+# 1. Stacca da develop
+git checkout develop
+git pull origin develop
+git checkout -b feature/UI-MODULE-123-password-strength
+
+# 2. Sviluppo
+# ... implementa componenti, testa, documenta ...
+
+# 3. Bump version e push
+npm version minor
+git push origin feature/UI-MODULE-123-password-strength --tags
+
+# 4. PR verso develop
+gh pr create --base develop
+
+# 5. Dopo merge in develop, per release:
+git checkout master
+git merge develop
+git push origin master --tags
+npm publish
+```
+
+**⚠️ IMPORTANTE:**
+- ✅ Feature branch da `develop`
+- ✅ PR verso `develop`
+- ✅ `master` solo per release
+- ❌ MAI PR dirette a `master`
+
 ### Development Workflow
 
 **Simple changes:**
@@ -340,6 +378,21 @@ docs/tasks/archive/by-release/v2.0.0/UI-MODULE-123-add-password-strength.md
 - Style improvements
 - Documentation
 
+### Version Bump Command
+**ALWAYS run before pushing:**
+```bash
+npm version patch  # Bug fixes (0.0.x)
+npm version minor  # New features (0.x.0)
+npm version major  # Breaking changes (x.0.0)
+
+# This automatically:
+# - Updates package.json version
+# - Creates git commit "vX.X.X"
+# - Creates git tag
+
+# Then push:
+git push && git push --tags
+```
 ---
 
 ## 🚫 Restrictions
@@ -370,6 +423,18 @@ docs/tasks/archive/by-release/v2.0.0/UI-MODULE-123-add-password-strength.md
 - [ ] Version bumped
 - [ ] Accessibility verified
 - [ ] Mobile responsive tested
+
+### Pre-Publish Hook (Recommended)
+
+Aggiungi al `package.json` per bloccare pubblicazioni con errori:
+
+```json
+"scripts": {
+  "prepublishOnly": "npm run verify && npm run test:cov"
+}
+```
+
+Questo esegue automaticamente tutti i controlli prima di `npm publish` e blocca se qualcosa fallisce.
 
 ---
 
