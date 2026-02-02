@@ -31,7 +31,7 @@ export const SignUpPage: React.FC = () => {
     baseUrl, // IMPORTANT: used for OAuth redirect (same as SignIn)
   } = useAuthConfig();
 
-  const { login, api } = useAuthState();
+  const { api } = useAuthState();
 
   const [fname, setFname] = useState("");
   const [lname, setLname] = useState("");
@@ -67,15 +67,21 @@ export const SignUpPage: React.FC = () => {
 
     try {
       // 1) Register the user
-      await api.post("/api/auth/register", {
+      const { data } = await api.post("/api/auth/register", {
         fullname: { fname, lname },
         username,
         email,
         password,
       });
 
-      // 2) Auto-login after successful registration
-      await login({ email, password });
+      // 2) Redirect to verify email page (no auto-login)
+      if (data?.emailSent) {
+        navigate(`/verify-email?email=${encodeURIComponent(email)}` , { replace: true });
+        return;
+      }
+      // Fallback: still guide user to verify page
+      navigate(`/verify-email?email=${encodeURIComponent(email)}` , { replace: true });
+      return;
     } catch (err: any) {
       const status = err?.response?.status;
       if (status === 400) {
