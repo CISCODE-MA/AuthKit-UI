@@ -79,18 +79,18 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
   async function hardLogout() {
     try {
       // Ask backend to clear the HttpOnly refreshToken cookie
-      await api.post('/auth/logout');
+      await api.post('/api/auth/logout');
     } catch (e) {
       // Even if backend call fails, still clear local session
       console.warn('Logout endpoint failed, proceeding with local logout:', e);
     }
-  
+
     setAccessToken(null);
     setUser(null);
-  
+
     localStorage.removeItem('authToken');
     sessionStorage.clear();
-  
+
     setExpired(false);
     navigate('/login', { replace: true });
   }
@@ -124,7 +124,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
 
       try {
         const { data } = await axios.post(
-          `${config.baseUrl}/auth/refresh-token`,
+          `${config.baseUrl}/api/auth/refresh-token`,
           {},
           { withCredentials: true }
         );
@@ -204,13 +204,13 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
           {/* Google OAuth callback route */}
           <Route
             path="oauth/google/callback"
-            element={<GoogleCallbackPage  />}
+            element={<GoogleCallbackPage />}
           />
 
           {/* Microsoft OAuth callback route */}
-          <Route 
+          <Route
             path="/oauth/microsoft/callback"
-            element={<GoogleCallbackPage />} 
+            element={<GoogleCallbackPage />}
           />
 
           {/* everything else protected */}
