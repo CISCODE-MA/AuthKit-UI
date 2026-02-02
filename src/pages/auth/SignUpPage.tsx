@@ -31,7 +31,7 @@ export const SignUpPage: React.FC = () => {
     baseUrl, // IMPORTANT: used for OAuth redirect (same as SignIn)
   } = useAuthConfig();
 
-  const { login, api } = useAuthState();
+  const { api } = useAuthState();
 
   const [fname, setFname] = useState("");
   const [lname, setLname] = useState("");
@@ -67,15 +67,21 @@ export const SignUpPage: React.FC = () => {
 
     try {
       // 1) Register the user
-      await api.post("/api/auth/register", {
+      const { data } = await api.post("/api/auth/register", {
         fullname: { fname, lname },
         username,
         email,
         password,
       });
 
-      // 2) Auto-login after successful registration
-      await login({ email, password });
+      // 2) Redirect to verify email page (no auto-login)
+      if (data?.emailSent) {
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
+        return;
+      }
+      // Fallback: still guide user to verify page
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
+      return;
     } catch (err: any) {
       const status = err?.response?.status;
       if (status === 400) {
@@ -119,10 +125,10 @@ export const SignUpPage: React.FC = () => {
     sessionStorage.setItem("postLoginRedirect", from);
 
     if (providerId === "google") {
-      const callbackPath = "/oauth/google/callback";
+      const callbackPath = "/api/oauth/google/callback";
       const callbackUrl = `${window.location.origin}${callbackPath}`;
 
-      const url = new URL(`${baseUrl}/auth/google`);
+      const url = new URL(`${baseUrl}/api/auth/google`);
       url.searchParams.set("redirect", callbackUrl);
 
       window.location.href = url.toString();
@@ -130,10 +136,10 @@ export const SignUpPage: React.FC = () => {
     }
 
     if (providerId === "microsoft") {
-      const callbackPath = "/oauth/microsoft/callback";
+      const callbackPath = "/api/oauth/microsoft/callback";
       const callbackUrl = `${window.location.origin}${callbackPath}`;
 
-      const url = new URL(`${baseUrl}/auth/microsoft`);
+      const url = new URL(`${baseUrl}/api/auth/microsoft`);
       url.searchParams.set("redirect", callbackUrl);
 
       window.location.href = url.toString();

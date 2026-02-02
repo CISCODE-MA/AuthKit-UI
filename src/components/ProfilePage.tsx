@@ -38,7 +38,7 @@ export const ProfilePage: React.FC = () => {
 
     async function loadProfile() {
       try {
-        const { data } = await api.get('/auth/client/me');
+        const { data } = await api.get('/api/auth/me');
         if (cancelled) return;
 
         setUser(data);
@@ -69,7 +69,7 @@ export const ProfilePage: React.FC = () => {
     setSaving(true);
 
     try {
-      await api.patch('/auth/client/me', { name });
+      await api.patch('/api/auth/me', { name });
       setUser({ ...user, name });
       setIsEditing(false);
 
@@ -306,11 +306,10 @@ export const ProfilePage: React.FC = () => {
                 value={name}
                 disabled={!isEditing || saving}
                 onChange={(e) => setName(e.target.value)}
-                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${
-                  isEditing
+                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isEditing
                     ? 'border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
                     : 'border-gray-200 bg-gray-50 text-gray-700'
-                }`}
+                  }`}
               />
             </div>
 
