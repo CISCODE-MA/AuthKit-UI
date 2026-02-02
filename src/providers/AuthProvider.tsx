@@ -194,12 +194,9 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
             }
           />
 
-<<<<<<< HEAD
           {/* public verify-email route */}
           <Route path="verify-email" element={<VerifyEmailPage />} />
 
-=======
->>>>>>> 10886973c606f33a9bfec0bffd599d875323897e
           {/* public forgot/reset password routes */}
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
           <Route path="reset-password" element={<ResetPasswordPage />} />
