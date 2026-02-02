@@ -2,16 +2,19 @@ name: Publish to npm
 
 on:
   push:
+    tags:
+      - "v*.*.*"
     branches:
-      - "master" # Triggers on pushes to the master branch
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write # Required for npm provenance
 
     steps:
       - name: Checkout code
