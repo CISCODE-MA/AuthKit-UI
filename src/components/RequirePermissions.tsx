@@ -1,6 +1,6 @@
 // src/components/auth/RequirePermissions.tsx
 import React from 'react';
-import { Navigate } from 'react-router';            // or useNavigate()
+import { Navigate } from 'react-router-dom';            // or useNavigate()
 import { useCan, useHasRole } from '../hooks/useAbility'; // your hooks
 
 interface Props {
