@@ -12,6 +12,7 @@ import { attachAuthInterceptor, resetSessionFlag } from '../utils/attachAuthInte
 import { SessionExpiredModal } from '../components/SessionExpiredModal';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { SignUpPage } from '../pages/auth/SignUpPage';
+import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { GoogleCallbackPage } from "../pages/auth/GoogleCallbackPage";
 import { ForgotPasswordPage } from "../pages/auth/ForgotPasswordPage";
@@ -192,6 +193,9 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
               accessToken ? <Navigate to="/" replace /> : <SignUpPage />
             }
           />
+
+          {/* public verify-email route */}
+          <Route path="verify-email" element={<VerifyEmailPage />} />
 
           {/* public forgot/reset password routes */}
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
