@@ -6,10 +6,14 @@ type ToastType = 'success' | 'error';
 export const ProfilePage: React.FC = () => {
   const { user, api, setUser } = useAuthState();
 
-  const [name, setName] = useState(user?.name ?? '');
+  const [fname, setFname] = useState('');
+  const [lname, setLname] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState(user?.email ?? '');
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const [orig, setOrig] = useState({ fname: '', lname: '', username: '' });
 
   const [toast, setToast] = useState<{
     open: boolean;
@@ -38,12 +42,18 @@ export const ProfilePage: React.FC = () => {
 
     async function loadProfile() {
       try {
-        const { data } = await api.get('/api/auth/me');
+        const resp = await api.get('/api/auth/me');
         if (cancelled) return;
 
-        setUser(data);
-        setName(data?.name ?? '');
-        setEmail(data?.email ?? '');
+        const u = resp?.data?.data;
+        setEmail(u?.email ?? '');
+        const f = u?.fullname?.fname ?? '';
+        const l = u?.fullname?.lname ?? '';
+        const un = u?.username ?? '';
+        setFname(f);
+        setLname(l);
+        setUsername(un);
+        setOrig({ fname: f, lname: l, username: un });
       } catch (err) {
         console.error('Failed to load profile details:', err);
       }
@@ -56,8 +66,9 @@ export const ProfilePage: React.FC = () => {
   }, [api, setUser]);
 
   const displayName = useMemo(() => {
-    return (name || user?.name || user?.email || '').trim();
-  }, [name, user?.name, user?.email]);
+    const combined = `${fname} ${lname}`.trim();
+    return (combined || user?.name || username || email || '').trim();
+  }, [fname, lname, username, email, user?.name]);
 
   const avatarInitial = useMemo(() => {
     return displayName.charAt(0).toUpperCase() || '?';
@@ -69,9 +80,10 @@ export const ProfilePage: React.FC = () => {
     setSaving(true);
 
     try {
-      await api.patch('/api/auth/me', { name });
-      setUser({ ...user, name });
+      await api.patch('/api/auth/me', { fullname: { fname, lname }, username });
+      setUser({ ...user, name: `${fname} ${lname}`.trim() });
       setIsEditing(false);
+      setOrig({ fname, lname, username });
 
       setToast({
         open: true,
@@ -299,13 +311,45 @@ export const ProfilePage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-2">
+                First name
+              </label>
+              <input
+                type="text"
+                value={fname}
+                disabled={!isEditing || saving}
+                onChange={(e) => setFname(e.target.value)}
+                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isEditing
+                    ? 'border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                    : 'border-gray-200 bg-gray-50 text-gray-700'
+                  }`}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-2">
+                Last name
+              </label>
+              <input
+                type="text"
+                value={lname}
+                disabled={!isEditing || saving}
+                onChange={(e) => setLname(e.target.value)}
+                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isEditing
+                    ? 'border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                    : 'border-gray-200 bg-gray-50 text-gray-700'
+                  }`}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-2">
                 Username
               </label>
               <input
                 type="text"
-                value={name}
+                value={username}
                 disabled={!isEditing || saving}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setUsername(e.target.value)}
                 className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isEditing
                     ? 'border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
                     : 'border-gray-200 bg-gray-50 text-gray-700'
@@ -344,7 +388,9 @@ export const ProfilePage: React.FC = () => {
               disabled={saving}
               onClick={() => {
                 setIsEditing(false);
-                setName(user?.name ?? '');
+                setFname(orig.fname);
+                setLname(orig.lname);
+                setUsername(orig.username);
               }}
               className="mt-6 text-sm font-medium text-gray-600 hover:text-gray-900"
             >
