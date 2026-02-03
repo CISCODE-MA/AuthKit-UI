@@ -13,6 +13,7 @@ import type {
   AuthTokens,
   AuthResponse,
   RegisterResponse,
+  UserProfile,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   VerifyEmailRequest,
@@ -102,6 +103,19 @@ export class AuthService {
    */
   async resendVerification(email: string): Promise<AuthResponse> {
     return this.http.post<AuthResponse>('/api/auth/resend-verification', { email });
+  }
+
+  // ============================================================================
+  // USER PROFILE
+  // ============================================================================
+
+  /**
+   * Get current user profile
+   * GET /api/auth/me
+   * Requires authentication (access token)
+   */
+  async getProfile(): Promise<UserProfile> {
+    return this.http.get<UserProfile>('/api/auth/me');
   }
 
   // ============================================================================

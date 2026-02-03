@@ -64,15 +64,17 @@ function isTokenExpired(token: string): boolean {
 
 /**
  * Convert JWT payload to UserProfile
+ * Note: Backend JWT only contains sub, roles, permissions
+ * Email and other details must be fetched separately
  */
 function jwtToUserProfile(payload: JwtPayload): UserProfile {
   return {
     id: payload.sub,
-    email: payload.email,
-    name: null, // Backend may include name in JWT, adjust if needed
+    email: payload.email || '', // JWT may not contain email, will fetch from /me
+    name: null,
     roles: payload.roles || [],
     permissions: payload.permissions || [],
-    modules: [], // May need to fetch from backend
+    modules: [],
     tenantId: payload.tenantId || '',
   };
 }
@@ -221,11 +223,13 @@ export function createUseAuth(config: UseAuthConfig) {
 
     /**
      * Login action
+     * After getting tokens, fetch full user profile from /me endpoint
      */
     const login = useCallback(async (credentials: LoginCredentials) => {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       try {
+        // Step 1: Get tokens
         const tokens = await authService.login(credentials);
         const decoded = decodeJwt(tokens.accessToken);
         
@@ -233,21 +237,57 @@ export function createUseAuth(config: UseAuthConfig) {
           throw new Error('Invalid token received');
         }
 
-        const user = jwtToUserProfile(decoded);
-
-        // Store tokens and user
+        // Store tokens first
         localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
         localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
 
-        setState({
-          user,
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-        });
+        // Step 2: Fetch full user profile from /me
+        try {
+          authService.setTokenGetter(() => tokens.accessToken);
+          const response: any = await authService.getProfile();
+          
+          // Backend returns {ok: true, data: {...}}
+          const fullProfile = response.data || response;
+          
+          // Map backend user to frontend UserProfile
+          const user: UserProfile = {
+            id: fullProfile._id || fullProfile.id,
+            email: fullProfile.email,
+            name: fullProfile.fullname 
+              ? `${fullProfile.fullname.fname} ${fullProfile.fullname.lname}`
+              : null,
+            roles: fullProfile.roles || [],
+            permissions: decoded.permissions || [],
+            modules: [],
+            tenantId: '',
+          };
+          
+          // Store full profile
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+          setState({
+            user,
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } catch (profileError) {
+          // Fallback to JWT data if /me fails
+          console.warn('Failed to fetch profile, using JWT data:', profileError);
+          const user = jwtToUserProfile(decoded);
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+          setState({
+            user,
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        }
       } catch (error: any) {
         setState((prev) => ({
           ...prev,
@@ -390,7 +430,6 @@ export function createUseAuth(config: UseAuthConfig) {
         login,
         register,
         logout,
-        refreshToken: () => refreshAccessToken(state.refreshToken!),
         verifyEmail,
         resendVerification,
         forgotPassword,
