@@ -76,11 +76,11 @@ export const SignUpPage: React.FC = () => {
 
       // 2) Redirect to verify email page (no auto-login)
       if (data?.emailSent) {
-        navigate(`/verify-email?email=${encodeURIComponent(email)}` , { replace: true });
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
         return;
       }
       // Fallback: still guide user to verify page
-      navigate(`/verify-email?email=${encodeURIComponent(email)}` , { replace: true });
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
       return;
     } catch (err: any) {
       const status = err?.response?.status;
@@ -125,10 +125,10 @@ export const SignUpPage: React.FC = () => {
     sessionStorage.setItem("postLoginRedirect", from);
 
     if (providerId === "google") {
-      const callbackPath = "/oauth/google/callback";
+      const callbackPath = "/api/oauth/google/callback";
       const callbackUrl = `${window.location.origin}${callbackPath}`;
 
-      const url = new URL(`${baseUrl}/auth/google`);
+      const url = new URL(`${baseUrl}/api/auth/google`);
       url.searchParams.set("redirect", callbackUrl);
 
       window.location.href = url.toString();
@@ -136,10 +136,10 @@ export const SignUpPage: React.FC = () => {
     }
 
     if (providerId === "microsoft") {
-      const callbackPath = "/oauth/microsoft/callback";
+      const callbackPath = "/api/oauth/microsoft/callback";
       const callbackUrl = `${window.location.origin}${callbackPath}`;
 
-      const url = new URL(`${baseUrl}/auth/microsoft`);
+      const url = new URL(`${baseUrl}/api/auth/microsoft`);
       url.searchParams.set("redirect", callbackUrl);
 
       window.location.href = url.toString();

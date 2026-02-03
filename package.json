@@ -1,6 +1,10 @@
 {
   "name": "@ciscode/ui-authentication-kit",
+<<<<<<< HEAD
   "version": "1.0.10",
+=======
+  "version": "1.0.11",
+>>>>>>> b59c2e6d79afc759be21012a01ac50260e8bc696
   "description": "",
   "main": "dist/index.umd.js",
   "module": "dist/index.mjs",
