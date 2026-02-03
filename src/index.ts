@@ -2,21 +2,21 @@
 // PUBLIC API EXPORTS
 // ============================================================================
 
-// Legacy exports (to be refactored in Step 2)
+// Providers (UPDATED: now uses new useAuth internally)
+export { AuthProvider } from './providers/AuthProvider';
+export { useAuthState } from './context/AuthStateContext';
+
+// Legacy exports (maintained for compatibility)
 export * from './main/app';
 export * from './components/ProfilePage';
 
 // ============================================================================
-// NEW: Step 1 - Foundation Layer
+// NEW: Step 1 - Foundation Layer (Refactored in Step 2)
 // ============================================================================
 
 // Hooks (PRIMARY API)
 export { createUseAuth } from './hooks/useAuth';
-export type { UseAuthReturn, UseAuthConfig } from './hooks/useAuth';
-
-// Providers
-// Note: Will create new AuthProvider in Step 2 to replace legacy
-// export { AuthProvider, useAuth } from './providers/AuthProvider';
+export type { UseAuthConfig } from './hooks/useAuth';
 
 // Services (for advanced usage)
 export { AuthService } from './services/auth.service';
@@ -38,6 +38,7 @@ export type {
   JwtPayload,
   AuthState,
   AuthActions,
+  UseAuthReturn,
   
   // User types
   UserProfile,

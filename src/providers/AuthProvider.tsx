@@ -14,6 +14,7 @@ import { SignInPage } from '../pages/auth/SignInPage';
 import { SignUpPage } from '../pages/auth/SignUpPage';
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router";
 import { GoogleCallbackPage } from "../pages/auth/GoogleCallbackPage";
+import { createUseAuth } from '../hooks/useAuth';
 
 interface Props {
   config: AuthConfigProps;
@@ -33,13 +34,36 @@ const RequireAuth: React.FC<{ children: JSX.Element }> = ({ children }) => {
 export const AuthProvider: React.FC<Props> = ({ config, children }) => {
   const navigate = useNavigate();
 
-  /* ── state ─────────────────────────────────────────────── */
+  /* ── New auth hook (foundation layer) ──────────────────── */
+  const useAuthHook = useMemo(
+    () => createUseAuth({
+      baseUrl: config.baseUrl || '',
+      autoRefresh: true,
+      refreshBeforeSeconds: 60,
+    }),
+    [config.baseUrl]
+  );
+  const auth = useAuthHook();
+
+  /* ── Legacy state (for backward compatibility) ─────────── */
   const [accessToken, setAccessToken] = useState<string | null>(
     () => localStorage.getItem('authToken')
   );
   const [user, setUser] = useState<UserProfile | null>(null);
   const [booting, setBooting] = useState(true);
   const [expired, setExpired] = useState(false);
+
+  /* ── Sync new auth state with legacy state ─────────────── */
+  useEffect(() => {
+    if (auth.user && auth.accessToken) {
+      setAccessToken(auth.accessToken);
+      setUser(auth.user as UserProfile);
+    } else {
+      setAccessToken(null);
+      setUser(null);
+    }
+    setBooting(false);
+  }, [auth.user, auth.accessToken]);
 
   /* ── Google OAuth callback component (inside AuthProvider so it can touch state) ── */
   const GoogleOAuthCallback: React.FC = () => {
@@ -50,14 +74,10 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
       const tokenFromQuery = params.get('accessToken');
 
       if (tokenFromQuery) {
-        try {
-          setAccessToken(tokenFromQuery);
-          setUser(decodeToken(tokenFromQuery));
-          localStorage.setItem('authToken', tokenFromQuery);
-          resetSessionFlag();
-        } catch (e) {
-          console.error("Failed to decode or store Google access token:", e);
-        }
+        // Store token in localStorage for useAuth hook to pick up
+        localStorage.setItem('authToken', tokenFromQuery);
+        localStorage.setItem('refreshToken', params.get('refreshToken') || '');
+        resetSessionFlag();
       } else {
         console.error("No accessToken found in Google OAuth callback URL.");
       }
@@ -65,8 +85,9 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
       const redirectPath = sessionStorage.getItem('postLoginRedirect') || '/';
       sessionStorage.removeItem('postLoginRedirect');
 
-      navigate(redirectPath, { replace: true });
-    }, [location.search, navigate]);
+      // Force re-render by reloading (useAuth will pick up tokens)
+      window.location.href = redirectPath;
+    }, [location.search]);
 
     // No UI needed; this route just processes the tokens then redirects.
     return null;
@@ -74,20 +95,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
 
   /* ── hard logout ───────────────────────────────────────── */
   async function hardLogout() {
-    try {
-      // Ask backend to clear the HttpOnly refreshToken cookie
-      await api.post('/auth/logout');
-    } catch (e) {
-      // Even if backend call fails, still clear local session
-      console.warn('Logout endpoint failed, proceeding with local logout:', e);
-    }
-  
-    setAccessToken(null);
-    setUser(null);
-  
-    localStorage.removeItem('authToken');
-    sessionStorage.clear();
-  
+    await auth.logout();
     setExpired(false);
     navigate('/login', { replace: true });
   }
@@ -99,55 +107,28 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
       withCredentials: true,
     });
 
+    // Use new auth system's token
+    if (auth.accessToken) {
+      client.defaults.headers.common['Authorization'] = `Bearer ${auth.accessToken}`;
+    }
+
     attachAuthInterceptor(client, {
       baseUrl: config.baseUrl,
-      getAccessToken: () => accessToken,
-      setAccessToken: t => setAccessToken(t),
+      getAccessToken: () => auth.accessToken,
+      setAccessToken: () => {}, // Token managed by useAuth hook
       logout: () => setExpired(true),
     });
 
     return client;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.baseUrl, accessToken]);
+  }, [config.baseUrl, auth.accessToken]);
 
-  /* ── bootstrap (localStorage → refresh) ────────────────── */
-  useEffect(() => {
-    const init = async () => {
-      if (accessToken) {
-        setUser(decodeToken(accessToken));
-        setBooting(false);
-        return;
-      }
-
-      try {
-        const { data } = await axios.post(
-          `${config.baseUrl}/auth/refresh-token`,
-          {},
-          { withCredentials: true }
-        );
-        setAccessToken(data.accessToken);
-        setUser(decodeToken(data.accessToken));
-        localStorage.setItem('authToken', data.accessToken);
-      } catch {
-        /* no valid refresh cookie – remain logged-out */
-      } finally {
-        setBooting(false);
-      }
-    };
-    init();
-  }, [accessToken, config.baseUrl]);
+  /* ── bootstrap (no longer needed, handled by useAuth) ─── */
+  // Removed: useAuth hook handles auto-refresh internally
 
   /* ── manual login (email/password client login) ────────── */
   async function login(credentials: { email: string; password: string }) {
-    const { data } = await api.post('/api/auth/login', credentials);
-    setAccessToken(data.accessToken);
-    setUser(decodeToken(data.accessToken));
-    localStorage.setItem('authToken', data.accessToken);
+    await auth.login(credentials);
     resetSessionFlag();
-
-    // NOTE: this previously tried to use `location.state.from`
-    // but `location` here is the global, not React Router's.
-    // For simplicity we send the user to "/" after manual login.
     navigate('/', { replace: true });
   }
 

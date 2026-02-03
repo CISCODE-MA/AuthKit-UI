@@ -441,7 +441,6 @@ export function createUseAuth(config: UseAuthConfig) {
         login,
         register,
         logout,
-        refreshAccessToken,
         verifyEmail,
         resendVerification,
         forgotPassword,

@@ -4,6 +4,16 @@
  */
 
 // ============================================================================
+// IMPORTS - User types needed throughout
+// ============================================================================
+
+import type { UserProfile as UserProfileBase, RoleWithPerms } from './User';
+
+// Re-export for external use
+export type UserProfile = UserProfileBase;
+export type { RoleWithPerms };
+
+// ============================================================================
 // AUTH CREDENTIALS & REQUESTS
 // ============================================================================
 
@@ -96,12 +106,6 @@ export interface RegisterResponse {
   user?: UserProfile;
 }
 
-// ============================================================================
-// USER PROFILE (Re-export existing + extend)
-// ============================================================================
-
-export { UserProfile, RoleWithPerms } from './User';
-
 /**
  * User data from JWT token (decoded)
  */
@@ -154,9 +158,6 @@ export interface AuthActions {
   
   /** Logout current user */
   logout: () => Promise<void>;
-  
-  /** Refresh access token */
-  refreshToken: () => Promise<void>;
   
   /** Verify email with token */
   verifyEmail: (token: string) => Promise<void>;
