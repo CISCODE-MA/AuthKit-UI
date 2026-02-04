@@ -6,6 +6,7 @@ import { InlineError } from "../../components/InlineError";
 import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
 import { toTailwindColorClasses } from "../../utils/colorHelpers";
+import { extractHttpErrorMessage } from "../../utils/errorHelpers";
 
 export const ForgotPasswordPage: React.FC = () => {
   const t = useT("authLib");
@@ -31,9 +32,10 @@ export const ForgotPasswordPage: React.FC = () => {
       // Always show generic success regardless of user existence
       setSent(true);
     } catch (err) {
-      // Do not enumerate users; still show success message
-      setSent(true);
-      console.error("Forgot password request failed", err);
+      // Show backend error details.message via InlineError
+      const msg = extractHttpErrorMessage(err);
+      setError(msg);
+      setSent(false);
     } finally {
       setPending(false);
     }

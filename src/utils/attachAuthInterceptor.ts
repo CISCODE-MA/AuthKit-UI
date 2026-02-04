@@ -4,6 +4,7 @@ import axios, {
     AxiosRequestConfig,
     InternalAxiosRequestConfig,
 } from 'axios';
+import { extractHttpErrorMessage } from './errorHelpers';
 
 interface Options {
     baseUrl: string;                      // e.g. https://api.myapp.com
@@ -59,6 +60,14 @@ export function attachAuthInterceptor(api: AxiosInstance, opts: Options) {
                         sessionExpiredFlag = true;
                         opts.logout();          // 🔔 open modal, keep token for now
                     }
+
+                    // Surface detailed error message for UI to display on login page
+                    try {
+                        const msg = extractHttpErrorMessage(refreshErr);
+                        if (msg) {
+                            sessionStorage.setItem('authErrorMessage', msg);
+                        }
+                    } catch { /* ignore storage errors */ }
 
                     queue.forEach(cb => cb(null));
                     queue = [];

@@ -6,6 +6,7 @@ import { InlineError } from "../../components/InlineError";
 import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
 import { toTailwindColorClasses } from "../../utils/colorHelpers";
+import { extractHttpErrorMessage } from "../../utils/errorHelpers";
 
 export const ResetPasswordPage: React.FC = () => {
   const t = useT("authLib");
@@ -53,16 +54,8 @@ export const ResetPasswordPage: React.FC = () => {
       // On success, show brief confirmation then navigate to login
       navigate("/login", { replace: true });
     } catch (err: any) {
-      const status = err?.response?.status;
-      if (status === 400 || status === 401 || status === 410) {
-        setError(
-          t("ResetPasswordPage.invalidOrExpired", {
-            defaultValue: "Reset link is invalid or has expired. Request a new one.",
-          })
-        );
-      } else {
-        setError(t("errors.generic", { defaultValue: "Something went wrong. Please try again." }));
-      }
+      const msg = extractHttpErrorMessage(err);
+      setError(msg);
     } finally {
       setPending(false);
     }

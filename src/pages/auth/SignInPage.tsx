@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { InputField } from "../../components/actions/InputField";
 import { SocialButton } from "../../components/actions/SocialButton";
 import googleIcon from "../../assets/icons/google-icon-svgrepo-com.svg";
@@ -7,6 +7,7 @@ import { toTailwindColorClasses } from "../../utils/colorHelpers";
 import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
 import { InlineError } from "../../components/InlineError";
+import { extractHttpErrorMessage } from "../../utils/errorHelpers";
 import { AuthConfigProps } from "../../models/AuthConfig";
 import { useT } from "@ciscode/ui-translate-core";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -39,6 +40,14 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Show any provider-level error surfaced by the interceptor (e.g., refresh failures)
+  useEffect(() => {
+    const msg = sessionStorage.getItem('authErrorMessage');
+    if (msg) {
+      setError(msg);
+      sessionStorage.removeItem('authErrorMessage');
+    }
+  }, []);
 
   const allProvidersData = {
     google: { icon: googleIcon, label: t("social.google") },
@@ -64,11 +73,8 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
     try {
       await login({ email, password });
     } catch (err: any) {
-      if (err?.response?.status === 401) {
-        setError(t("errors.invalidCredentials"));
-      } else {
-        setError(t("errors.generic"));
-      }
+      const msg = extractHttpErrorMessage(err);
+      setError(msg);
     } finally {
       setPending(false);
     }
