@@ -7,6 +7,7 @@ import { toTailwindColorClasses } from "../../utils/colorHelpers";
 import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
 import { InlineError } from "../../components/InlineError";
+import { extractHttpErrorMessage } from "../../utils/errorHelpers";
 import { useT } from "@ciscode/ui-translate-core";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -83,27 +84,8 @@ export const SignUpPage: React.FC = () => {
       navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
       return;
     } catch (err: any) {
-      const status = err?.response?.status;
-      if (status === 400) {
-        setError(
-          err?.response?.data?.message ||
-          t("errors.invalidData", {
-            defaultValue: "Please check the fields and try again.",
-          })
-        );
-      } else if (status === 409) {
-        setError(
-          t("errors.emailInUse", {
-            defaultValue: "This email is already in use.",
-          })
-        );
-      } else {
-        setError(
-          t("errors.generic", {
-            defaultValue: "Something went wrong. Please try again.",
-          })
-        );
-      }
+      const msg = extractHttpErrorMessage(err);
+      setError(msg);
     } finally {
       setPending(false);
     }
