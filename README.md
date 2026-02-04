@@ -112,6 +112,24 @@ function AdminPanel() {
 - **[Architecture](docs/ARCHITECTURE.md)** - Project structure
 - **[Release Guide](docs/RELEASE.md)** - Release workflow
 
+## 🧪 Testing
+
+- Tests are centralized under the `tests/` folder.
+- Vitest is configured with jsdom and a global setup in [tests/setup.ts](tests/setup.ts).
+- Run tests: `npm test`
+- Run coverage: `npm run test:cov`
+
+Folder layout:
+
+```
+tests/
+  components/
+  context/
+  hooks/
+  utils/
+  setup.ts
+```
+
 ## 🎯 Key Components
 
 | Component            | Description                                        |
@@ -182,6 +200,9 @@ npm run build
 
 # Run tests
 npm test
+
+# Run tests with coverage
+npm run test:cov
 
 # Type check
 npm run typecheck
