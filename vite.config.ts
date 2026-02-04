@@ -5,7 +5,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
-      name: "ciscode-model",
+      name: "AuthKitUI",
       fileName: "index",
     },
     rollupOptions: {
@@ -19,6 +19,18 @@ export default defineConfig({
         "jwt-decode",
         "@ciscode/ui-translate-core"
       ],
+      output: {
+        globals: {
+          react: "React",
+          "react-dom": "ReactDOM",
+          "react-router": "ReactRouter",
+          "react-router-dom": "ReactRouterDOM",
+          "react-cookie": "ReactCookie",
+          axios: "axios",
+          "jwt-decode": "jwtDecode",
+          "@ciscode/ui-translate-core": "UITranslateCore",
+        },
+      },
     },
   },
 });

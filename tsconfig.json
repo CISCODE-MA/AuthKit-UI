@@ -15,5 +15,6 @@
         "allowSyntheticDefaultImports": true,
         "emitDeclarationOnly": false
     },
-    "include": ["src", "src/models", "src/vite-env.d.ts", "../template-fe-model-users/src/models/table"]
+    "include": ["src", "src/models", "src/vite-env.d.ts", "../template-fe-model-users/src/models/table"],
+    "exclude": ["src/test/**/*", "test/**/*", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "examples/**/*"]
 }

@@ -27,6 +27,9 @@ import type {
   JwtPayload,
 } from '../models/auth.types';
 
+// Re-export types for consumers
+export type { UseAuthReturn } from '../models/auth.types';
+
 /**
  * Storage keys for tokens
  */
@@ -83,18 +86,114 @@ function jwtToUserProfile(payload: JwtPayload): UserProfile {
  * Authentication hook configuration
  */
 export interface UseAuthConfig {
-  /** Backend API base URL */
+  /** 
+   * Backend API base URL
+   * @example 'http://localhost:3000' or 'https://api.example.com'
+   */
   baseUrl: string;
   
-  /** Auto-refresh token before expiration */
+  /** 
+   * Auto-refresh token before expiration
+   * @default false
+   */
   autoRefresh?: boolean;
   
-  /** Refresh token X seconds before expiration */
+  /** 
+   * Refresh token X seconds before expiration (only if autoRefresh is true)
+   * @default 60
+   * @example 300 // Refresh 5 minutes before expiration
+   */
   refreshBeforeSeconds?: number;
 }
 
 /**
- * Create useAuth hook with configuration
+ * Create authentication hook with configuration
+ * 
+ * This factory function creates a pre-configured `useAuth` hook that manages
+ * authentication state, token storage, and automatic token refresh.
+ * 
+ * @param config - Configuration options for the authentication hook
+ * @returns A React hook that provides authentication state and actions
+ * 
+ * @example
+ * **Basic usage:**
+ * ```tsx
+ * // 1. Create the hook (typically in a separate file)
+ * import { createUseAuth } from '@ciscode/ui-authentication-kit';
+ * 
+ * export const useAuth = createUseAuth({
+ *   baseUrl: 'http://localhost:3000',
+ *   autoRefresh: true,
+ *   refreshBeforeSeconds: 60,
+ * });
+ * ```
+ * 
+ * @example
+ * **Using in components:**
+ * ```tsx
+ * import { useAuth } from './hooks/useAuth';
+ * 
+ * function LoginForm() {
+ *   const { login, user, isAuthenticated, isLoading, error } = useAuth();
+ *   
+ *   const handleSubmit = async (e: React.FormEvent) => {
+ *     e.preventDefault();
+ *     try {
+ *       await login({
+ *         email: 'user@example.com',
+ *         password: 'password123',
+ *       });
+ *       // Redirect to dashboard after successful login
+ *     } catch (err) {
+ *       console.error('Login failed:', err);
+ *     }
+ *   };
+ *   
+ *   return (
+ *     <div>
+ *       {isLoading ? (
+ *         <p>Loading...</p>
+ *       ) : isAuthenticated ? (
+ *         <p>Welcome, {user?.email}!</p>
+ *       ) : (
+ *         <form onSubmit={handleSubmit}>
+ *           <input type="email" name="email" required />
+ *           <input type="password" name="password" required />
+ *           <button type="submit">Login</button>
+ *           {error && <p>{error}</p>}
+ *         </form>
+ *       )}
+ *     </div>
+ *   );
+ * }
+ * ```
+ * 
+ * @example
+ * **Protected route pattern:**
+ * ```tsx
+ * function ProtectedRoute({ children }: { children: React.ReactNode }) {
+ *   const { isAuthenticated, isLoading } = useAuth();
+ *   
+ *   if (isLoading) return <div>Loading...</div>;
+ *   if (!isAuthenticated) return <Navigate to="/login" />;
+ *   
+ *   return <>{children}</>;
+ * }
+ * ```
+ * 
+ * @example
+ * **Role-based access:**
+ * ```tsx
+ * function AdminPanel() {
+ *   const { user, hasRole } = useAuth();
+ *   
+ *   if (!hasRole('admin')) {
+ *     return <p>Access denied. Admin role required.</p>;
+ *   }
+ *   
+ *   return <div>Admin Panel Content</div>;
+ * }
+ * ```
  */
 export function createUseAuth(config: UseAuthConfig) {
   const authService = new AuthService(config.baseUrl);
@@ -424,6 +523,20 @@ export function createUseAuth(config: UseAuthConfig) {
       setState((prev) => ({ ...prev, error: null }));
     }, []);
 
+    /**
+     * Check if user has a specific role
+     */
+    const hasRole = useCallback((role: string): boolean => {
+      return state.user?.roles?.includes(role) ?? false;
+    }, [state.user]);
+
+    /**
+     * Check if user has a specific permission
+     */
+    const hasPermission = useCallback((permission: string): boolean => {
+      return state.user?.permissions?.includes(permission) ?? false;
+    }, [state.user]);
+
     return useMemo(
       () => ({
         ...state,
@@ -435,6 +548,8 @@ export function createUseAuth(config: UseAuthConfig) {
         forgotPassword,
         resetPassword,
         clearError,
+        hasRole,
+        hasPermission,
       }),
       [
         state,
@@ -446,6 +561,8 @@ export function createUseAuth(config: UseAuthConfig) {
         forgotPassword,
         resetPassword,
         clearError,
+        hasRole,
+        hasPermission,
       ]
     );
   };
