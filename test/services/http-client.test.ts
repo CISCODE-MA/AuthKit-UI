@@ -362,6 +362,7 @@ describe('HttpClient', () => {
   // ==========================================================================
 
   describe('Timeout Handling', () => {
+    // Skipped: fetch abort/timeout not reliably mockable in jsdom, flaky in CI. See docs/tasks/active/UI-FLAKY-HTTP-TIMEOUT.md
     it.skip('should abort request on timeout', async () => {
       const clientWithTimeout = new HttpClient({ baseUrl, timeout: 100 });
 
@@ -372,7 +373,12 @@ describe('HttpClient', () => {
           })
       );
 
-      await expect(clientWithTimeout.get('/slow')).rejects.toThrow();
+      // Use fake timers to simulate timeout
+      vi.useFakeTimers();
+      const promise = clientWithTimeout.get('/slow');
+      vi.advanceTimersByTime(200);
+      await expect(promise).rejects.toThrow();
+      vi.useRealTimers();
     });
   });
 

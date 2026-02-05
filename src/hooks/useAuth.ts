@@ -344,10 +344,8 @@ export function createUseAuth(config: UseAuthConfig) {
         try {
           authService.setTokenGetter(() => tokens.accessToken);
           const response: any = await authService.getProfile();
-          
           // Backend returns {ok: true, data: {...}}
           const fullProfile = response.data || response;
-          
           // Map backend user to frontend UserProfile
           const user: UserProfile = {
             id: fullProfile._id || fullProfile.id,
@@ -355,15 +353,13 @@ export function createUseAuth(config: UseAuthConfig) {
             name: fullProfile.fullname 
               ? `${fullProfile.fullname.fname} ${fullProfile.fullname.lname}`
               : null,
-            roles: decoded.roles || [],
-            permissions: decoded.permissions || [],
-            modules: [],
-            tenantId: '',
+            roles: fullProfile.roles || decoded.roles || [],
+            permissions: fullProfile.permissions || decoded.permissions || [],
+            modules: fullProfile.modules || [],
+            tenantId: fullProfile.tenantId || '',
           };
-          
           // Store full profile
           localStorage.setItem(USER_KEY, JSON.stringify(user));
-
           setState({
             user,
             accessToken: tokens.accessToken,
@@ -377,7 +373,6 @@ export function createUseAuth(config: UseAuthConfig) {
           console.warn('Failed to fetch profile, using JWT data:', profileError);
           const user = jwtToUserProfile(decoded);
           localStorage.setItem(USER_KEY, JSON.stringify(user));
-
           setState({
             user,
             accessToken: tokens.accessToken,

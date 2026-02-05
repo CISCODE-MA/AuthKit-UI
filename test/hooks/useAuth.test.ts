@@ -147,7 +147,8 @@ describe('useAuth', () => {
       expect(result.current.user).toMatchObject({
         id: mockUserProfile.id,
         email: mockUserProfile.email,
-        roles: mockUserProfile.roles,
+        roles: ['user'],
+        permissions: ['read:profile', 'write:profile'],
       });
       expect(result.current.accessToken).toBe(mockAuthTokens.accessToken);
       expect(result.current.error).toBeNull();
@@ -437,6 +438,7 @@ describe('useAuth', () => {
   // ========================================================================
 
   describe('Auto-Refresh', () => {
+    // Skipped: Flaky with fake timers, not reliable in CI. See docs/tasks/active/UI-FLAKY-AUTOREFRESH.md
     it.skip(
       'should auto-refresh token before expiration',
       async () => {
