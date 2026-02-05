@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom/vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { MuiLoginForm } from './MuiLoginForm.example';
 
@@ -16,7 +17,7 @@ vi.mock('@ciscode/ui-authentication-kit', () => ({
 // Mock useNavigate
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal<typeof import('react-router-dom')>();
   return {
     ...actual,
     useNavigate: () => mockNavigate,
@@ -46,7 +47,7 @@ describe('MuiLoginForm', () => {
   });
 
   it('shows error alert if error is present', () => {
-    // Remock useAuth to return error
+    // Re-mock useAuth to return error
     vi.doMock('@ciscode/ui-authentication-kit', () => ({
       createUseAuth: () => () => ({
         login: vi.fn(),

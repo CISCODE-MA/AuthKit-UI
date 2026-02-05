@@ -16,9 +16,6 @@ import {
   Divider,
   Stack,
 } from '@mui/material';
-import GoogleIcon from '@mui/icons-material/Google';
-import MicrosoftIcon from '@mui/icons-material/Microsoft';
-import FacebookIcon from '@mui/icons-material/Facebook';
 import { createUseAuth } from '@ciscode/ui-authentication-kit';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -93,7 +90,6 @@ export function CompleteLoginPage() {
           <Button
             fullWidth
             variant="outlined"
-            startIcon={<GoogleIcon />}
             onClick={() => handleOAuthLogin('google')}
             sx={{
               py: 1.5,
@@ -111,7 +107,6 @@ export function CompleteLoginPage() {
           <Button
             fullWidth
             variant="outlined"
-            startIcon={<MicrosoftIcon />}
             onClick={() => handleOAuthLogin('microsoft')}
             sx={{
               py: 1.5,
@@ -129,7 +124,6 @@ export function CompleteLoginPage() {
           <Button
             fullWidth
             variant="outlined"
-            startIcon={<FacebookIcon />}
             onClick={() => handleOAuthLogin('facebook')}
             sx={{
               py: 1.5,
