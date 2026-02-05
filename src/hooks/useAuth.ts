@@ -355,7 +355,7 @@ export function createUseAuth(config: UseAuthConfig) {
             name: fullProfile.fullname 
               ? `${fullProfile.fullname.fname} ${fullProfile.fullname.lname}`
               : null,
-            roles: fullProfile.roles || [],
+            roles: decoded.roles || [],
             permissions: decoded.permissions || [],
             modules: [],
             tenantId: '',
@@ -537,6 +537,52 @@ export function createUseAuth(config: UseAuthConfig) {
       return state.user?.permissions?.includes(permission) ?? false;
     }, [state.user]);
 
+    /**
+     * Get user profile from backend
+     * Useful for refreshing profile or loading after OAuth
+     */
+    const getProfile = useCallback(async () => {
+      if (!state.accessToken) {
+        throw new Error('No access token available');
+      }
+
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+      try {
+        const response: any = await authService.getProfile();
+        const fullProfile = response.data || response;
+        
+        const user: UserProfile = {
+          id: fullProfile._id || fullProfile.id,
+          email: fullProfile.email,
+          name: fullProfile.fullname 
+            ? `${fullProfile.fullname.fname} ${fullProfile.fullname.lname}`
+            : null,
+          roles: fullProfile.roles || [],
+          permissions: fullProfile.permissions || [],
+          modules: [],
+          tenantId: '',
+        };
+        
+        localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+        setState((prev) => ({
+          ...prev,
+          user,
+          isLoading: false,
+        }));
+
+        return user;
+      } catch (error: any) {
+        setState((prev) => ({
+          ...prev,
+          error: error.message || 'Failed to load profile',
+          isLoading: false,
+        }));
+        throw error;
+      }
+    }, [state.accessToken]);
+
     return useMemo(
       () => ({
         ...state,
@@ -550,6 +596,7 @@ export function createUseAuth(config: UseAuthConfig) {
         clearError,
         hasRole,
         hasPermission,
+        getProfile,
       }),
       [
         state,
@@ -563,6 +610,7 @@ export function createUseAuth(config: UseAuthConfig) {
         clearError,
         hasRole,
         hasPermission,
+        getProfile,
       ]
     );
   };

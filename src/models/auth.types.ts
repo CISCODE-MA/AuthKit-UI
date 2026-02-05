@@ -273,6 +273,14 @@ export interface AuthActions {
    * @returns true if user has the permission
    */
   hasPermission: (permission: string) => boolean;
+
+  /**
+   * Get/refresh user profile from backend
+   * Useful after OAuth or to refresh profile data
+   * @returns User profile
+   * @throws {ApiError} If not authenticated or profile fetch fails
+   */
+  getProfile: () => Promise<UserProfile>;
 }
 
 /**
