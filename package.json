@@ -57,6 +57,8 @@
     "typescript": "^5.2.2",
     "vite": "^4.5.9",
     "react-router": "^7.13.0",
-    "react-router-dom": "^7.13.0"
+    "react-router-dom": "^7.13.0",
+    "vitest": "^2.1.8",
+    "@vitest/coverage-v8": "^2.1.8"
   }
 }
