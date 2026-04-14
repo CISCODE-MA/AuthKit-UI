@@ -27,7 +27,7 @@ export interface AuthConfigProps {
         title: string;
         description: string;
     };
-    
+
     /** Custom sign up URL to navigate to from SignInPage */
     customSignUpUrl?: string;
 

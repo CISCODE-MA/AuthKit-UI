@@ -1,15 +1,15 @@
+import { useT } from "@ciscode/ui-translate-core";
 import React, { useState } from "react";
-import { InputField } from "../../components/actions/InputField";
-import { SocialButton } from "../../components/actions/SocialButton";
+import { useLocation, useNavigate } from "react-router-dom";
 import googleIcon from "../../assets/icons/google-icon-svgrepo-com.svg";
 import microsoftIcon from "../../assets/icons/microsoft-svgrepo-com.svg";
-import { toTailwindColorClasses } from "../../utils/colorHelpers";
+import { InputField } from "../../components/actions/InputField";
+import { SocialButton } from "../../components/actions/SocialButton";
+import { InlineError } from "../../components/InlineError";
 import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
-import { InlineError } from "../../components/InlineError";
+import { toTailwindColorClasses } from "../../utils/colorHelpers";
 import { extractHttpErrorMessage } from "../../utils/errorHelpers";
-import { useT } from "@ciscode/ui-translate-core";
-import { useNavigate, useLocation } from "react-router-dom";
 
 export const SignUpPage: React.FC = () => {
   const t = useT("authLib");
@@ -103,7 +103,7 @@ export const SignUpPage: React.FC = () => {
         navigate('/login?registered=true', { replace: true });
         return;
       }
-      
+
       // Fallback: still guide user to verify page
       navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
       return;

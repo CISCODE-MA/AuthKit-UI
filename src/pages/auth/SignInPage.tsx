@@ -1,17 +1,16 @@
+import { useT } from "@ciscode/ui-translate-core";
 import React, { useEffect, useState } from "react";
-import { InputField } from "../../components/actions/InputField";
-import { SocialButton } from "../../components/actions/SocialButton";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import googleIcon from "../../assets/icons/google-icon-svgrepo-com.svg";
 import microsoftIcon from "../../assets/icons/microsoft-svgrepo-com.svg";
-import { toTailwindColorClasses } from "../../utils/colorHelpers";
+import { InputField } from "../../components/actions/InputField";
+import { SocialButton } from "../../components/actions/SocialButton";
+import { InlineError } from "../../components/InlineError";
 import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
-import { InlineError } from "../../components/InlineError";
-import { extractHttpErrorMessage } from "../../utils/errorHelpers";
 import { AuthConfigProps } from "../../models/AuthConfig";
-import { useT } from "@ciscode/ui-translate-core";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Link } from "react-router-dom"
+import { toTailwindColorClasses } from "../../utils/colorHelpers";
+import { extractHttpErrorMessage } from "../../utils/errorHelpers";
 
 export const SignInPage: React.FC<AuthConfigProps> = () => {
   const t = useT("authLib");
@@ -113,10 +112,10 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
     if (providerId === "microsoft") {
       const callbackPath = "/api/oauth/microsoft/callback";
       const callbackUrl = `${window.location.origin}${callbackPath}`;
-  
+
       const url = new URL(`${baseUrl}/api/auth/microsoft`);
       url.searchParams.set("redirect", callbackUrl);
-  
+
       window.location.href = url.toString();
       return;
     }
