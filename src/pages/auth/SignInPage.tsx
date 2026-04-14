@@ -32,6 +32,7 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
       description: t("community.description"),
     },
     baseUrl, // IMPORTANT: used for Google OAuth redirect
+    customSignUpUrl
   } = useAuthConfig();
 
   const { login } = useAuthState();
@@ -211,7 +212,7 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
               <br />
               <button
                 type="button"
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate(customSignUpUrl || "/signup")}
                 className={textClass}
               >
                 {t("SignInPage.signUp")}
@@ -223,9 +224,9 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <InputField
-              label={t("form.emailLabel")}
+              label={t("form.emailLabel", { defaultValue: "Email" })}
               type="email"
-              placeholder={t("form.emailPlaceholder")}
+              placeholder={t("form.emailPlaceholder", { defaultValue: "name@company.com" })}
               color={borderClass}
               value={email}
               onChange={setEmail}
