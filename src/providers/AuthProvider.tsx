@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { AuthConfigContext } from '../context/AuthConfigContext';
 import { AuthStateCtx, useAuthState } from '../context/AuthStateContext';
@@ -7,16 +7,16 @@ import { AuthStateCtx, useAuthState } from '../context/AuthStateContext';
 import type { AuthConfigProps } from '../models/AuthConfig';
 import type { UserProfile } from '../models/User';
 
-import { decodeToken } from '../utils/jwtHelpers';
-import { attachAuthInterceptor, resetSessionFlag } from '../utils/attachAuthInterceptor';
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { SessionExpiredModal } from '../components/SessionExpiredModal';
+import { ForgotPasswordPage } from "../pages/auth/ForgotPasswordPage";
+import { GoogleCallbackPage } from "../pages/auth/GoogleCallbackPage";
+import { ResetPasswordPage } from "../pages/auth/ResetPasswordPage";
 import { SignInPage } from '../pages/auth/SignInPage';
 import { SignUpPage } from '../pages/auth/SignUpPage';
 import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
-import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { GoogleCallbackPage } from "../pages/auth/GoogleCallbackPage";
-import { ForgotPasswordPage } from "../pages/auth/ForgotPasswordPage";
-import { ResetPasswordPage } from "../pages/auth/ResetPasswordPage";
+import { attachAuthInterceptor, resetSessionFlag } from '../utils/attachAuthInterceptor';
+import { decodeToken } from '../utils/jwtHelpers';
 
 interface Props {
   config: AuthConfigProps;
@@ -138,7 +138,8 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
       }
     };
     init();
-  }, [accessToken, config.baseUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.baseUrl]);
 
   /* ── manual login (email/password client login) ────────── */
   async function login(credentials: { email: string; password: string }) {
