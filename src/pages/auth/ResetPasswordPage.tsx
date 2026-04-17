@@ -53,7 +53,7 @@ export const ResetPasswordPage: React.FC = () => {
       await api.post("/api/auth/reset-password", { token, newPassword });
       // On success, show brief confirmation then navigate to login
       navigate("/login", { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg = extractHttpErrorMessage(err);
       setError(msg);
     } finally {

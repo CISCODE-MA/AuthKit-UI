@@ -36,5 +36,5 @@ export interface AuthConfigProps {
     /** Override the default signup API endpoint */
     signUpEndpoint?: string;
     /** Format the outgoing payload before sending it to the signup endpoint */
-    signUpTransformPayload?: (data: any) => any;
+    signUpTransformPayload?: (data: Record<string, unknown>) => Record<string, unknown>;
 }

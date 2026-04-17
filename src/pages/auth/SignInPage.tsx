@@ -1,5 +1,5 @@
 import { useT } from "@ciscode/ui-translate-core";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import googleIcon from "../../assets/icons/google-icon-svgrepo-com.svg";
 import microsoftIcon from "../../assets/icons/microsoft-svgrepo-com.svg";
@@ -39,15 +39,12 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  // Show any provider-level error surfaced by the interceptor (e.g., refresh failures)
-  useEffect(() => {
+  // Read and clear any provider-level error at mount time via initializer (avoids set-state-in-effect)
+  const [error, setError] = useState<string | null>(() => {
     const msg = sessionStorage.getItem('authErrorMessage');
-    if (msg) {
-      setError(msg);
-      sessionStorage.removeItem('authErrorMessage');
-    }
-  }, []);
+    if (msg) sessionStorage.removeItem('authErrorMessage');
+    return msg;
+  });
 
   const allProvidersData = {
     google: { icon: googleIcon, label: t("social.google") },
@@ -72,7 +69,7 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
     setPending(true);
     try {
       await login({ email, password });
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg = extractHttpErrorMessage(err);
       setError(msg);
     } finally {
@@ -89,10 +86,9 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
     // Where to go AFTER successful OAuth login.
     // If user was redirected here from a protected page, use that;
     // otherwise, default to root "/".
+    const state = location.state as { from?: { pathname?: string } | string } | null;
     const from =
-      (location.state as any)?.from?.pathname ||
-      (location.state as any)?.from ||
-      "/";
+      (typeof state?.from === 'object' ? state?.from?.pathname : state?.from) ?? "/";
 
     // Save post-login redirect so callback route can restore it.
     sessionStorage.setItem("postLoginRedirect", from);

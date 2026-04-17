@@ -78,7 +78,7 @@ export const SignUpPage: React.FC = () => {
     setPending(true);
 
     try {
-      let payload: any = {
+      let payload: Record<string, unknown> = {
         fullname: { fname, lname },
         username,
         email,
@@ -107,7 +107,7 @@ export const SignUpPage: React.FC = () => {
       // Fallback: still guide user to verify page
       navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
       return;
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg = extractHttpErrorMessage(err);
       setError(msg);
     } finally {
@@ -122,10 +122,9 @@ export const SignUpPage: React.FC = () => {
     }
 
     // Where to go AFTER successful OAuth login.
+    const state = location.state as { from?: { pathname?: string } | string } | null;
     const from =
-      (location.state as any)?.from?.pathname ||
-      (location.state as any)?.from ||
-      "/";
+      (typeof state?.from === 'object' ? state?.from?.pathname : state?.from) ?? "/";
 
     // Save post-login redirect so callback route can restore it.
     sessionStorage.setItem("postLoginRedirect", from);
@@ -326,7 +325,7 @@ export const SignUpPage: React.FC = () => {
                 <InputField
                   key={field.name}
                   label={field.label}
-                  type={field.type as any}
+                  type={field.type as 'text' | 'email' | 'password' | 'number' | 'tel'}
                   placeholder={field.placeholder || ''}
                   color={borderClass}
                   value={customValues[field.name]}

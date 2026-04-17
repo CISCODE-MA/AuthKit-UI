@@ -13,18 +13,19 @@ export const InlineError: React.FC<Props> = ({
   dismissAfterMs = 4000,
 }) => {
   const t = useT("authLib"); // or whichever namespace you use for common strings
-  const [show, setShow] = useState(false);
+  // Track which message was dismissed — avoids setState-in-effect and ref-during-render issues
+  const [dismissedForMessage, setDismissedForMessage] = useState<string | null>(null);
 
-  /* show on message change */
+  /* auto-hide after delay */
   useEffect(() => {
-    setShow(Boolean(message));
-    if (message && dismissAfterMs > 0) {
-      const id = window.setTimeout(() => setShow(false), dismissAfterMs);
-      return () => window.clearTimeout(id);
-    }
+    if (!message || dismissAfterMs <= 0) return;
+    const id = window.setTimeout(() => setDismissedForMessage(message), dismissAfterMs);
+    return () => window.clearTimeout(id);
   }, [message, dismissAfterMs]);
 
-  if (!show || !message) return null;
+  const show = Boolean(message) && message !== dismissedForMessage;
+
+  if (!show) return null;
 
   return (
     <div
@@ -51,7 +52,7 @@ export const InlineError: React.FC<Props> = ({
 
       {/* Dismiss button */}
       <button
-        onClick={() => setShow(false)}
+        onClick={() => setDismissedForMessage(message)}
         aria-label={t("inlineError.dismiss")} 
         className="
           absolute ltr:right-2 rtl:left-2 top-2 rounded p-1 text-red-600/70

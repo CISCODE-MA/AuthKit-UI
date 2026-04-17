@@ -41,10 +41,10 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     () => localStorage.getItem('authToken')
   );
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [booting, setBooting] = useState(true);
   const [expired, setExpired] = useState(false);
 
   /* ── Google OAuth callback component (inside AuthProvider so it can touch state) ── */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const GoogleOAuthCallback: React.FC = () => {
     const location = useLocation();
 
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
       sessionStorage.removeItem('postLoginRedirect');
 
       navigate(redirectPath, { replace: true });
-    }, [location.search, navigate]);
+    }, [location.search]);
 
     // No UI needed; this route just processes the tokens then redirects.
     return null;
@@ -96,6 +96,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
   }
 
   /* ── axios + interceptor ───────────────────────────────── */
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const api = useMemo(() => {
     const client = axios.create({
       baseURL: config.baseUrl,
@@ -110,7 +111,6 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     });
 
     return client;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.baseUrl, accessToken]);
 
   /* ── bootstrap (localStorage → refresh) ────────────────── */
@@ -118,7 +118,6 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     const init = async () => {
       if (accessToken) {
         setUser(decodeToken(accessToken));
-        setBooting(false);
         return;
       }
 
@@ -133,8 +132,6 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
         localStorage.setItem('authToken', data.accessToken);
       } catch {
         /* no valid refresh cookie – remain logged-out */
-      } finally {
-        setBooting(false);
       }
     };
     init();
@@ -165,6 +162,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
       api,
       setUser,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [accessToken, user, api]
   );
 

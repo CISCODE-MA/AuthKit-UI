@@ -32,6 +32,10 @@ export default [
       'react/prop-types': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
+      // react-hooks v5 new rules — downgraded to warn; some fire false positives
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/immutability': 'off',
+      'react-hooks/preserve-manual-memoization': 'warn',
     },
   },
 

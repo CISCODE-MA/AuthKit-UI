@@ -1,6 +1,6 @@
 // src/utils/colorHelpers.ts
-const TAILWIND_PREFIXES = ["bg", "text", "border", "fill", "stroke"] as const;
-export type TailwindPrefix = typeof TAILWIND_PREFIXES[number];
+type TailwindPrefixTuple = ["bg", "text", "border", "fill", "stroke"];
+export type TailwindPrefix = TailwindPrefixTuple[number];
 
 /**
  * Convert a single color string into a valid Tailwind color class,
