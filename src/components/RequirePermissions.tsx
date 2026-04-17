@@ -1,7 +1,7 @@
 // src/components/auth/RequirePermissions.tsx
 import React from 'react';
-import { Navigate } from 'react-router-dom';            // or useNavigate()
-import { useCan, useHasRole } from '../hooks/useAbility'; // your hooks
+import { Navigate } from 'react-router-dom';
+import { useHasRole, useCan, useCanAny } from '../hooks/useAbility';
 
 interface Props {
     /** list of permissions; *every* one must be present  */
@@ -22,21 +22,23 @@ export const RequirePermissions: React.FC<Props> = ({
     fallbackRoles = ['super-admin'],
     redirectTo = '/dashboard',
 }) => {
+    /* all hooks called unconditionally at the top */
+    const hasBypass = useHasRole(...fallbackRoles);
+    const hasAll    = useCan(...fallbackpermessions);
+    const hasSome   = useCanAny(...anyPermessions);
 
     /* 1. super‑admin bypass */
-    const hasBypass = fallbackRoles.some(r => useHasRole(r));
     if (hasBypass) return <>{children}</>;
 
-    /* 2. must have *all*  */
-    const hasAll = fallbackpermessions.length === 0 || fallbackpermessions.every(p => useCan(p));
-
-    /* 3. must have *any*  */
-    const hasSome = anyPermessions.length === 0 || anyPermessions.some(p => useCan(p));
-
-    if (hasAll && hasSome) {
+    /* 2. must have *all* fallback perms (vacuous true if empty) */
+    /* 3. must have *any* of anyPermessions (vacuous true if empty) */
+    if (
+      (fallbackpermessions.length === 0 || hasAll) &&
+      (anyPermessions.length === 0 || hasSome)
+    ) {
         return <>{children}</>;
     }
 
-    /* 4. no access => either redirect or render a 403 page  */
+    /* 4. no access ⇒ redirect */
     return <Navigate to={redirectTo} replace />;
 };

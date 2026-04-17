@@ -21,3 +21,12 @@ export function useCan(...needed: string[]) {
   const perms = user?.permissions ?? [];
   return needed.every(p => perms.includes(p));
 }
+
+/**
+ * Returns true if the user has *at least one* of the given permissions.
+ */
+export function useCanAny(...needed: string[]) {
+  const { user } = useAuthState();
+  const perms = user?.permissions ?? [];
+  return needed.some(p => perms.includes(p));
+}

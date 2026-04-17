@@ -24,7 +24,7 @@ export const VerifyEmailPage: React.FC = () => {
     },
   } = useAuthConfig();
 
-  const { bgClass, textClass, borderClass } = toTailwindColorClasses(colors);
+  const { bgClass, borderClass } = toTailwindColorClasses(colors);
   const gradientClass = `${bgClass} bg-gradient-to-r from-white/10 via-white/0 to-white/0`;
 
   return (

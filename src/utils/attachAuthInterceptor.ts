@@ -4,6 +4,7 @@ import axios, {
     AxiosRequestConfig,
     InternalAxiosRequestConfig,
 } from 'axios';
+import { extractHttpErrorMessage } from './errorHelpers';
 
 interface Options {
     baseUrl: string;                      // e.g. https://api.myapp.com
@@ -38,10 +39,10 @@ export function attachAuthInterceptor(api: AxiosInstance, opts: Options) {
         res => res,
         async (err: AxiosError) => {
             const original = err.config as AxiosRequestConfig | undefined;
-            if (err.response?.status !== 401 || !original || (original as any)._retry) {
+            if (err.response?.status !== 401 || !original || (original as AxiosRequestConfig & { _retry?: boolean })._retry) {
                 return Promise.reject(err);
             }
-            (original as any)._retry = true;
+            (original as AxiosRequestConfig & { _retry?: boolean })._retry = true;
 
             /* first request to notice the 401 */
             if (!refreshing) {
@@ -59,6 +60,14 @@ export function attachAuthInterceptor(api: AxiosInstance, opts: Options) {
                         sessionExpiredFlag = true;
                         opts.logout();          // 🔔 open modal, keep token for now
                     }
+
+                    // Surface detailed error message for UI to display on login page
+                    try {
+                        const msg = extractHttpErrorMessage(refreshErr);
+                        if (msg) {
+                            sessionStorage.setItem('authErrorMessage', msg);
+                        }
+                    } catch { /* ignore storage errors */ }
 
                     queue.forEach(cb => cb(null));
                     queue = [];
