@@ -46,7 +46,7 @@ function renderProfile(user = mockUser, apiOverride = mockApi) {
       }}
     >
       <ProfilePage />
-    </AuthStateCtx.Provider>
+    </AuthStateCtx.Provider>,
   );
 }
 
@@ -81,7 +81,7 @@ describe('ProfilePage', () => {
         }}
       >
         <ProfilePage />
-      </AuthStateCtx.Provider>
+      </AuthStateCtx.Provider>,
     );
     expect(screen.getByText(/No user data available/i)).toBeInTheDocument();
   });

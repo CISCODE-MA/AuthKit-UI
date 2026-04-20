@@ -1,43 +1,43 @@
-import { useT } from "@ciscode/ui-translate-core";
-import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import googleIcon from "../../assets/icons/google-icon-svgrepo-com.svg";
-import microsoftIcon from "../../assets/icons/microsoft-svgrepo-com.svg";
-import { InputField } from "../../components/actions/InputField";
-import { SocialButton } from "../../components/actions/SocialButton";
-import { InlineError } from "../../components/InlineError";
-import { useAuthConfig } from "../../context/AuthConfigContext";
-import { useAuthState } from "../../context/AuthStateContext";
-import { AuthConfigProps } from "../../models/AuthConfig";
-import { toTailwindColorClasses } from "../../utils/colorHelpers";
-import { extractHttpErrorMessage } from "../../utils/errorHelpers";
+import { useT } from '@ciscode/ui-translate-core';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import googleIcon from '../../assets/icons/google-icon-svgrepo-com.svg';
+import microsoftIcon from '../../assets/icons/microsoft-svgrepo-com.svg';
+import { InputField } from '../../components/actions/InputField';
+import { SocialButton } from '../../components/actions/SocialButton';
+import { InlineError } from '../../components/InlineError';
+import { useAuthConfig } from '../../context/AuthConfigContext';
+import { useAuthState } from '../../context/AuthStateContext';
+import { AuthConfigProps } from '../../models/AuthConfig';
+import { toTailwindColorClasses } from '../../utils/colorHelpers';
+import { extractHttpErrorMessage } from '../../utils/errorHelpers';
 
 export const SignInPage: React.FC<AuthConfigProps> = () => {
-  const t = useT("authLib");
+  const t = useT('authLib');
   const navigate = useNavigate();
   const location = useLocation();
 
   const {
-    brandName = t("brandName", { defaultValue: "MyBrand" }),
-    colors = { bg: "bg-sky-500", text: "text-white", border: "border-sky-500" },
+    brandName = t('brandName', { defaultValue: 'MyBrand' }),
+    colors = { bg: 'bg-sky-500', text: 'text-white', border: 'border-sky-500' },
     logoUrl,
     oauthProviders = [],
-    illustrationUrl = t("community.illustrationUrl", {
+    illustrationUrl = t('community.illustrationUrl', {
       defaultValue:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/35ba84b8335fda2819c3a14ea3d00321a0fd0e79e571caa31108468010868ca5?placeholderIfAbsent=true&apiKey=a460e9a46e514356ac1106eada03046c",
+        'https://cdn.builder.io/api/v1/image/assets/TEMP/35ba84b8335fda2819c3a14ea3d00321a0fd0e79e571caa31108468010868ca5?placeholderIfAbsent=true&apiKey=a460e9a46e514356ac1106eada03046c',
     }),
     communityContent = {
-      title: t("community.title"),
-      description: t("community.description"),
+      title: t('community.title'),
+      description: t('community.description'),
     },
     baseUrl, // IMPORTANT: used for Google OAuth redirect
-    customSignUpUrl
+    customSignUpUrl,
   } = useAuthConfig();
 
   const { login } = useAuthState();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [pending, setPending] = useState(false);
   // Read and clear any provider-level error at mount time via initializer (avoids set-state-in-effect)
   const [error, setError] = useState<string | null>(() => {
@@ -47,8 +47,8 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
   });
 
   const allProvidersData = {
-    google: { icon: googleIcon, label: t("social.google") },
-    microsoft: { icon: microsoftIcon, label: t("social.microsoft") },
+    google: { icon: googleIcon, label: t('social.google') },
+    microsoft: { icon: microsoftIcon, label: t('social.microsoft') },
   } as const;
 
   const providerButtons = oauthProviders
@@ -79,7 +79,7 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
 
   function handleProviderClick(providerId: string) {
     if (!baseUrl) {
-      console.error("Auth baseUrl is not configured.");
+      console.error('Auth baseUrl is not configured.');
       return;
     }
 
@@ -87,30 +87,29 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
     // If user was redirected here from a protected page, use that;
     // otherwise, default to root "/".
     const state = location.state as { from?: { pathname?: string } | string } | null;
-    const from =
-      (typeof state?.from === 'object' ? state?.from?.pathname : state?.from) ?? "/";
+    const from = (typeof state?.from === 'object' ? state?.from?.pathname : state?.from) ?? '/';
 
     // Save post-login redirect so callback route can restore it.
-    sessionStorage.setItem("postLoginRedirect", from);
+    sessionStorage.setItem('postLoginRedirect', from);
 
-    if (providerId === "google") {
-      const callbackPath = "/api/oauth/google/callback";
+    if (providerId === 'google') {
+      const callbackPath = '/api/oauth/google/callback';
       const callbackUrl = `${window.location.origin}${callbackPath}`;
 
       const url = new URL(`${baseUrl}/api/auth/google`);
-      url.searchParams.set("redirect", callbackUrl);
+      url.searchParams.set('redirect', callbackUrl);
 
       // Full redirect to backend → Google → backend → frontend callback
       window.location.href = url.toString();
       return;
     }
 
-    if (providerId === "microsoft") {
-      const callbackPath = "/api/oauth/microsoft/callback";
+    if (providerId === 'microsoft') {
+      const callbackPath = '/api/oauth/microsoft/callback';
       const callbackUrl = `${window.location.origin}${callbackPath}`;
 
       const url = new URL(`${baseUrl}/api/auth/microsoft`);
-      url.searchParams.set("redirect", callbackUrl);
+      url.searchParams.set('redirect', callbackUrl);
 
       window.location.href = url.toString();
       return;
@@ -118,18 +117,9 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
   }
 
   const spinner = (
-    <svg
-      className="h-4 w-4 animate-spin stroke-current"
-      viewBox="0 0 24 24"
-      fill="none"
-    >
+    <svg className="h-4 w-4 animate-spin stroke-current" viewBox="0 0 24 24" fill="none">
       <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4" />
-      <path
-        className="opacity-75"
-        d="M4 12a8 8 0 018-8"
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
+      <path className="opacity-75" d="M4 12a8 8 0 018-8" strokeWidth="4" strokeLinecap="round" />
     </svg>
   );
 
@@ -137,7 +127,9 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
     <div className={`flex items-center justify-center min-h-screen p-4 ${gradientClass}`}>
       <div className="flex w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden">
         {/* Left Illustration Panel */}
-        <div className={`hidden md:flex md:w-1/2 p-12 flex-col justify-between text-white ${bgClass}`}>
+        <div
+          className={`hidden md:flex md:w-1/2 p-12 flex-col justify-between text-white ${bgClass}`}
+        >
           <div>
             {logoUrl ? (
               <div className="flex items-center gap-4">
@@ -191,26 +183,24 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
             {/* Welcome */}
             <div className="w-full md:w-auto mb-4 md:mb-0 text-center md:text-left ltr:text-center rtl:text-center md:ltr:text-left md:rtl:text-right">
               <p className="text-sm md:text-lg">
-                {t("SignInPage.welcome")}{" "}
-                <span className={`font-semibold ${textClass} uppercase`}>
-                  {brandName}
-                </span>
+                {t('SignInPage.welcome')}{' '}
+                <span className={`font-semibold ${textClass} uppercase`}>{brandName}</span>
               </p>
               <h1 className="text-2xl md:text-4xl font-bold text-gray-800">
-                {t("SignInPage.signIn")}
+                {t('SignInPage.signIn')}
               </h1>
             </div>
 
             {/* Sign-up prompt */}
             <div className="text-sm text-gray-500 text-center md:text-right">
-              {t("SignInPage.noAccount")}
+              {t('SignInPage.noAccount')}
               <br />
               <button
                 type="button"
-                onClick={() => navigate(customSignUpUrl || "/signup")}
+                onClick={() => navigate(customSignUpUrl || '/signup')}
                 className={textClass}
               >
-                {t("SignInPage.signUp")}
+                {t('SignInPage.signUp')}
               </button>
             </div>
           </div>
@@ -219,42 +209,42 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <InputField
-              label={t("form.emailLabel", { defaultValue: "Email" })}
+              label={t('form.emailLabel', { defaultValue: 'Email' })}
               type="email"
-              placeholder={t("form.emailPlaceholder", { defaultValue: "name@company.com" })}
+              placeholder={t('form.emailPlaceholder', { defaultValue: 'name@company.com' })}
               color={borderClass}
               value={email}
               onChange={setEmail}
             />
             <InputField
-              label={t("form.passwordLabel")}
+              label={t('form.passwordLabel')}
               type="password"
-              placeholder={t("form.passwordPlaceholder")}
+              placeholder={t('form.passwordPlaceholder')}
               color={borderClass}
               value={password}
               onChange={setPassword}
             />
             <div className="ltr:text-right rtl:text-left">
-              <Link to="/forgot-password" className={textClass}>{t("SignInPage.forgotPassword")}</Link>
+              <Link to="/forgot-password" className={textClass}>
+                {t('SignInPage.forgotPassword')}
+              </Link>
             </div>
             <button
               type="submit"
               disabled={pending}
               className={`relative flex w-full items-center justify-center gap-2 py-3 rounded-lg font-medium transition-colors ${
-                pending ? "opacity-60 cursor-not-allowed" : ""
+                pending ? 'opacity-60 cursor-not-allowed' : ''
               } ${bgClass} text-white`}
             >
               {pending && spinner}
-              {pending ? t("SignInPage.signInSubmitting") : t("SignInPage.signIn")}
+              {pending ? t('SignInPage.signInSubmitting') : t('SignInPage.signIn')}
             </button>
 
             {providerButtons.length > 0 && (
               <>
                 <div className="flex items-center pt-2">
                   <div className={`flex-grow h-px ${bgClass}`} />
-                  <span className={`${textClass} mx-3 text-sm`}>
-                    {t("SignInPage.orLoginWith")}
-                  </span>
+                  <span className={`${textClass} mx-3 text-sm`}>{t('SignInPage.orLoginWith')}</span>
                   <div className={`flex-grow h-px ${bgClass}`} />
                 </div>
                 <div className="flex gap-3 mb-6 justify-center md:justify-start">

@@ -7,11 +7,11 @@ import { AuthStateCtx, useAuthState } from '../context/AuthStateContext';
 import type { AuthConfigProps } from '../models/AuthConfig';
 import type { UserProfile } from '../models/User';
 
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { SessionExpiredModal } from '../components/SessionExpiredModal';
-import { ForgotPasswordPage } from "../pages/auth/ForgotPasswordPage";
-import { GoogleCallbackPage } from "../pages/auth/GoogleCallbackPage";
-import { ResetPasswordPage } from "../pages/auth/ResetPasswordPage";
+import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
+import { GoogleCallbackPage } from '../pages/auth/GoogleCallbackPage';
+import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { SignUpPage } from '../pages/auth/SignUpPage';
 import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
@@ -27,9 +27,7 @@ interface Props {
 const RequireAuth: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { isAuthenticated } = useAuthState();
   const location = useLocation();
-  return isAuthenticated
-    ? children
-    : <Navigate to="/login" state={{ from: location }} replace />;
+  return isAuthenticated ? children : <Navigate to="/login" state={{ from: location }} replace />;
 };
 /* ----------------------------------------------------------- */
 
@@ -37,8 +35,8 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
   const navigate = useNavigate();
 
   /* ── state ─────────────────────────────────────────────── */
-  const [accessToken, setAccessToken] = useState<string | null>(
-    () => localStorage.getItem('authToken')
+  const [accessToken, setAccessToken] = useState<string | null>(() =>
+    localStorage.getItem('authToken'),
   );
   const [user, setUser] = useState<UserProfile | null>(null);
   const [expired, setExpired] = useState(false);
@@ -59,10 +57,10 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
           localStorage.setItem('authToken', tokenFromQuery);
           resetSessionFlag();
         } catch (e) {
-          console.error("Failed to decode or store Google access token:", e);
+          console.error('Failed to decode or store Google access token:', e);
         }
       } else {
-        console.error("No accessToken found in Google OAuth callback URL.");
+        console.error('No accessToken found in Google OAuth callback URL.');
       }
 
       const redirectPath = sessionStorage.getItem('postLoginRedirect') || '/';
@@ -106,7 +104,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     attachAuthInterceptor(client, {
       baseUrl: config.baseUrl,
       getAccessToken: () => accessToken,
-      setAccessToken: t => setAccessToken(t),
+      setAccessToken: (t) => setAccessToken(t),
       logout: () => setExpired(true),
     });
 
@@ -125,7 +123,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
         const { data } = await axios.post(
           `${config.baseUrl}/api/auth/refresh-token`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
         setAccessToken(data.accessToken);
         setUser(decodeToken(data.accessToken));
@@ -163,7 +161,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
       setUser,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [accessToken, user, api]
+    [accessToken, user, api],
   );
 
   // Optional boot screen
@@ -179,18 +177,18 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
           <Route
             path="login"
             element={
-              accessToken
-                ? <Navigate to="/" replace />
-                : <SignInPage baseUrl={config.baseUrl} colors={config.colors} />
+              accessToken ? (
+                <Navigate to="/" replace />
+              ) : (
+                <SignInPage baseUrl={config.baseUrl} colors={config.colors} />
+              )
             }
           />
 
           {/* public signup route */}
           <Route
             path="signup"
-            element={
-              accessToken ? <Navigate to="/" replace /> : <SignUpPage />
-            }
+            element={accessToken ? <Navigate to="/" replace /> : <SignUpPage />}
           />
 
           {/* public verify-email route */}
@@ -201,22 +199,13 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
           <Route path="reset-password" element={<ResetPasswordPage />} />
 
           {/* Google OAuth callback route */}
-          <Route
-            path="oauth/google/callback"
-            element={<GoogleCallbackPage />}
-          />
+          <Route path="oauth/google/callback" element={<GoogleCallbackPage />} />
 
           {/* Microsoft OAuth callback route */}
-          <Route
-            path="/oauth/microsoft/callback"
-            element={<GoogleCallbackPage />}
-          />
+          <Route path="/oauth/microsoft/callback" element={<GoogleCallbackPage />} />
 
           {/* everything else protected */}
-          <Route
-            path="*"
-            element={<RequireAuth>{children as React.ReactElement}</RequireAuth>}
-          />
+          <Route path="*" element={<RequireAuth>{children as React.ReactElement}</RequireAuth>} />
         </Routes>
 
         {expired && <SessionExpiredModal onConfirm={hardLogout} />}

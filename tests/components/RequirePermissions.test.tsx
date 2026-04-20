@@ -14,7 +14,7 @@ import { useCan, useHasRole, useCanAny } from '../../src/hooks/useAbility';
 
 function App({ element }: { element: React.ReactNode }) {
   return (
-    <MemoryRouter initialEntries={["/"]}>
+    <MemoryRouter initialEntries={['/']}>
       <Routes>
         <Route path="/" element={element as any} />
         <Route path="/dashboard" element={<div>Dashboard</div>} />
@@ -27,11 +27,13 @@ describe('RequirePermissions', () => {
   it('renders children when bypass role present', () => {
     (useHasRole as any).mockReturnValueOnce(true);
     render(
-      <App element={
-        <RequirePermissions fallbackRoles={["super-admin"]}>
-          <div>Protected</div>
-        </RequirePermissions>
-      } />
+      <App
+        element={
+          <RequirePermissions fallbackRoles={['super-admin']}>
+            <div>Protected</div>
+          </RequirePermissions>
+        }
+      />,
     );
     expect(screen.getByText('Protected')).toBeInTheDocument();
   });
@@ -40,11 +42,17 @@ describe('RequirePermissions', () => {
     // useCan defaults to true (has all fallbackpermessions)
     (useCanAny as ReturnType<typeof vi.fn>).mockReturnValueOnce(true); // has any of anyPermessions
     render(
-      <App element={
-        <RequirePermissions fallbackpermessions={["a","b"]} anyPermessions={["x","b"]} fallbackRoles={[]}>
-          <div>Protected</div>
-        </RequirePermissions>
-      } />
+      <App
+        element={
+          <RequirePermissions
+            fallbackpermessions={['a', 'b']}
+            anyPermessions={['x', 'b']}
+            fallbackRoles={[]}
+          >
+            <div>Protected</div>
+          </RequirePermissions>
+        }
+      />,
     );
     // In router tests, initial render can duplicate; assert at least one
     const els = screen.queryAllByText('Protected');
@@ -54,11 +62,13 @@ describe('RequirePermissions', () => {
   it('redirects when unauthorized', async () => {
     (useCan as ReturnType<typeof vi.fn>).mockReturnValue(false);
     render(
-      <App element={
-        <RequirePermissions fallbackpermessions={["a"]} anyPermessions={["b"]} fallbackRoles={[]}>
-          <div>Protected</div>
-        </RequirePermissions>
-      } />
+      <App
+        element={
+          <RequirePermissions fallbackpermessions={['a']} anyPermessions={['b']} fallbackRoles={[]}>
+            <div>Protected</div>
+          </RequirePermissions>
+        }
+      />,
     );
     // Assert redirect target is present
     await waitFor(() => expect(screen.getByText('Dashboard')).toBeInTheDocument());

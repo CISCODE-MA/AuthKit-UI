@@ -20,14 +20,16 @@ describe('AuthConfigContext', () => {
   } as any;
 
   it('throws when used outside provider', () => {
-    expect(() => render(<OutsideConsumer />)).toThrowError(/useAuthConfig must be used within an AuthConfigProvider/);
+    expect(() => render(<OutsideConsumer />)).toThrowError(
+      /useAuthConfig must be used within an AuthConfigProvider/,
+    );
   });
 
   it('provides config inside provider', () => {
     render(
       <AuthConfigContext.Provider value={config}>
         <InsideConsumer />
-      </AuthConfigContext.Provider>
+      </AuthConfigContext.Provider>,
     );
     expect(screen.getByTestId('baseUrl').textContent).toBe('https://api.example.com');
   });

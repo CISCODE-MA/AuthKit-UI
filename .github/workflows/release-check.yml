@@ -9,10 +9,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SONAR_HOST_URL: "https://sonarcloud.io"
-  SONAR_ORGANIZATION: "ciscode"
-  SONAR_PROJECT_KEY: "CISCODE-MA_AuthKit-UI"
-  NODE_VERSION: "22"
+  SONAR_HOST_URL: 'https://sonarcloud.io'
+  SONAR_ORGANIZATION: 'ciscode'
+  SONAR_PROJECT_KEY: 'CISCODE-MA_AuthKit-UI'
+  NODE_VERSION: '22'
 
 # ─── Job 1: Static checks (fast feedback, runs in parallel with test) ──────────
 jobs:
@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: 'npm'
 
       - name: Install
         run: npm ci
@@ -67,7 +67,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: 'npm'
 
       - name: Install
         run: npm ci
@@ -100,7 +100,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: 'npm'
 
       - name: Install
         run: npm ci

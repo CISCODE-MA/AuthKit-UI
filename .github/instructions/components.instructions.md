@@ -7,6 +7,7 @@
 ## 🎯 Component Architecture
 
 ### Component Structure
+
 ```
 ComponentName/
   ├── ComponentName.tsx       # Main component
@@ -17,6 +18,7 @@ ComponentName/
 ```
 
 ### Component Template
+
 ```typescript
 import React from 'react';
 import { ComponentNameProps } from './ComponentName.types';
@@ -46,6 +48,7 @@ ComponentName.displayName = 'ComponentName';
 ## 📝 Props Standards
 
 ### Props Interface
+
 ```typescript
 export interface ComponentNameProps {
   /** Primary content */
@@ -60,6 +63,7 @@ export interface ComponentNameProps {
 ```
 
 ### Required Props Documentation
+
 - ✅ JSDoc for all props
 - ✅ Default values clearly stated
 - ✅ Callback signatures with examples
@@ -70,6 +74,7 @@ export interface ComponentNameProps {
 ## ♿ Accessibility (A11y)
 
 ### WCAG 2.1 AA Compliance
+
 ```typescript
 // ✅ Good
 <button
@@ -85,12 +90,14 @@ export interface ComponentNameProps {
 ```
 
 ### Keyboard Navigation
+
 - ✅ All interactive elements keyboard accessible
 - ✅ Logical tab order
 - ✅ Enter/Space triggers actions
 - ✅ Escape closes modals/dialogs
 
 ### Screen Reader Support
+
 - ✅ `aria-label` for icon buttons
 - ✅ `aria-describedby` for error messages
 - ✅ `role` attributes where needed
@@ -101,16 +108,17 @@ export interface ComponentNameProps {
 ## 🎨 Theming & Styling
 
 ### Theme Support
+
 ```typescript
 import { useTheme } from '../context/ThemeContext';
 
 export const ThemedButton: React.FC = () => {
   const { theme } = useTheme();
-  
+
   return (
-    <button style={{ 
+    <button style={{
       backgroundColor: theme.colors.primary,
-      color: theme.colors.text 
+      color: theme.colors.text
     }}>
       Click
     </button>
@@ -119,17 +127,18 @@ export const ThemedButton: React.FC = () => {
 ```
 
 ### CSS-in-JS / Styled Components
+
 ```typescript
 import styled from 'styled-components';
 
 export const StyledButton = styled.button`
   background: ${({ theme }) => theme.colors.primary};
   padding: ${({ theme }) => theme.spacing.md};
-  
+
   &:hover {
     background: ${({ theme }) => theme.colors.primaryHover};
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -142,6 +151,7 @@ export const StyledButton = styled.button`
 ## 🧪 Component Testing
 
 ### Test Coverage Requirements
+
 ```typescript
 describe('LoginForm', () => {
   it('renders form fields', () => {
@@ -153,21 +163,21 @@ describe('LoginForm', () => {
   it('validates email format', async () => {
     render(<LoginForm />);
     const emailInput = screen.getByLabelText('Email');
-    
+
     await userEvent.type(emailInput, 'invalid-email');
     await userEvent.click(screen.getByRole('button', { name: /login/i }));
-    
+
     expect(await screen.findByText(/invalid email/i)).toBeInTheDocument();
   });
 
   it('calls onSubmit with form data', async () => {
     const onSubmit = jest.fn();
     render(<LoginForm onSubmit={onSubmit} />);
-    
+
     await userEvent.type(screen.getByLabelText('Email'), 'user@example.com');
     await userEvent.type(screen.getByLabelText('Password'), 'password123');
     await userEvent.click(screen.getByRole('button', { name: /login/i }));
-    
+
     expect(onSubmit).toHaveBeenCalledWith({
       email: 'user@example.com',
       password: 'password123'
@@ -182,6 +192,7 @@ describe('LoginForm', () => {
 ```
 
 ### Testing Best Practices
+
 - ✅ Use `@testing-library/react` and `@testing-library/user-event`
 - ✅ Query by role/label, not test IDs
 - ✅ Test user interactions, not implementation
@@ -194,12 +205,14 @@ describe('LoginForm', () => {
 ## 🔄 State Management
 
 ### Local State (useState)
+
 ```typescript
 const [isOpen, setIsOpen] = useState(false);
 const [formData, setFormData] = useState({ email: '', password: '' });
 ```
 
 ### Form State (React Hook Form recommended)
+
 ```typescript
 import { useForm } from 'react-hook-form';
 
@@ -210,6 +223,7 @@ const { register, handleSubmit, formState: { errors } } = useForm();
 ```
 
 ### Global State (Context API)
+
 ```typescript
 import { useAuth } from '../context/AuthContext';
 
@@ -221,6 +235,7 @@ const { user, login, logout } = useAuth();
 ## 📦 Component Exports
 
 ### Public API (index.ts)
+
 ```typescript
 // ✅ Export component and types
 export { LoginForm } from './LoginForm';
@@ -235,6 +250,7 @@ export type { LoginFormProps } from './LoginForm.types';
 ## 🚫 Anti-Patterns to Avoid
 
 ### ❌ Prop Drilling
+
 ```typescript
 // Bad - passing props through multiple levels
 <Parent data={data}>
@@ -255,6 +271,7 @@ const DataContext = createContext();
 ```
 
 ### ❌ Inline Object/Function Props
+
 ```typescript
 // Bad - creates new reference on every render
 <Button onClick={() => handleClick()} style={{ color: 'red' }} />
@@ -266,15 +283,13 @@ const buttonStyle = useMemo(() => ({ color: 'red' }), []);
 ```
 
 ### ❌ Missing Memoization for Expensive Computations
+
 ```typescript
 // Bad
 const expensiveValue = computeExpensiveValue(props.data);
 
 // Good
-const expensiveValue = useMemo(
-  () => computeExpensiveValue(props.data),
-  [props.data]
-);
+const expensiveValue = useMemo(() => computeExpensiveValue(props.data), [props.data]);
 ```
 
 ---

@@ -20,7 +20,7 @@ export const RbacProvider = RbacContext.Provider;
 /* helper hook that libraries call */
 export function useGrant(feature: string, action: string) {
   const table = React.useContext(RbacContext);
-  const rule  = table[feature]?.[action];
+  const rule = table[feature]?.[action];
 
   // Hooks must be called unconditionally before any early return
   const canByPerm = useCanAny(...(rule?.perms ?? []));

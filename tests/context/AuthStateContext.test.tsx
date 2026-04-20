@@ -26,14 +26,16 @@ describe('AuthStateContext', () => {
   };
 
   it('throws when used outside provider', () => {
-    expect(() => render(<OutsideConsumer />)).toThrowError(/useAuthState must be inside <AuthProvider>/);
+    expect(() => render(<OutsideConsumer />)).toThrowError(
+      /useAuthState must be inside <AuthProvider>/,
+    );
   });
 
   it('provides context values when inside provider', () => {
     render(
       <AuthStateCtx.Provider value={value}>
         <InsideConsumer />
-      </AuthStateCtx.Provider>
+      </AuthStateCtx.Provider>,
     );
     expect(screen.getByTestId('isAuth').textContent).toBe('true');
   });

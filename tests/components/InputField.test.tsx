@@ -13,7 +13,10 @@ describe('InputField', () => {
 
     function Controlled() {
       const [val, setVal] = React.useState('');
-      const handleChange = (v: string) => { spy(v); setVal(v); };
+      const handleChange = (v: string) => {
+        spy(v);
+        setVal(v);
+      };
       return (
         <InputField
           label="Email"

@@ -41,7 +41,9 @@ export function extractHttpErrorMessage(err: unknown): string {
     }
 
     if (err instanceof Error && err.message) return err.message;
-  } catch {/* ignore parsing issues */}
+  } catch {
+    /* ignore parsing issues */
+  }
 
   return 'An unexpected error occurred';
 }

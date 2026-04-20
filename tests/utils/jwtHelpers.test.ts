@@ -3,7 +3,7 @@ import { decodeToken } from '../../src/utils/jwtHelpers';
 
 function b64url(input: string) {
   const base64 = Buffer.from(input, 'utf-8').toString('base64');
-  return base64.replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_');
+  return base64.replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
 
 describe('jwtHelpers.decodeToken', () => {

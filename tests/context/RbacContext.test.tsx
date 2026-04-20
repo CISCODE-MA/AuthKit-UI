@@ -28,7 +28,7 @@ describe('RbacContext useGrant', () => {
     render(
       <RbacProvider value={{}}>
         <Probe feature="unknown" action="none" />
-      </RbacProvider>
+      </RbacProvider>,
     );
     expect(screen.getByTestId('unknown-none').textContent).toBe('false');
   });
@@ -38,7 +38,7 @@ describe('RbacContext useGrant', () => {
     render(
       <RbacProvider value={table}>
         <Probe feature="users" action="view" />
-      </RbacProvider>
+      </RbacProvider>,
     );
     expect(screen.getByTestId('users-view').textContent).toBe('true');
   });
@@ -48,7 +48,7 @@ describe('RbacContext useGrant', () => {
     render(
       <RbacProvider value={table}>
         <Probe feature="users" action="delete" />
-      </RbacProvider>
+      </RbacProvider>,
     );
     expect(screen.getByTestId('users-delete').textContent).toBe('true');
   });

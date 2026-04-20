@@ -3,13 +3,13 @@ import { describe, it, expect, vi } from 'vitest';
 import { attachAuthInterceptor, resetSessionFlag } from '../../src/utils/attachAuthInterceptor';
 
 function make401(config: InternalAxiosRequestConfig) {
-  return new AxiosError(
-    'Unauthorized',
-    'ERR_BAD_REQUEST',
+  return new AxiosError('Unauthorized', 'ERR_BAD_REQUEST', config, null, {
+    status: 401,
+    data: null,
+    headers: {},
     config,
-    null,
-    { status: 401, data: null, headers: {}, config, statusText: 'Unauthorized' }
-  );
+    statusText: 'Unauthorized',
+  });
 }
 
 describe('attachAuthInterceptor', () => {
@@ -20,19 +20,26 @@ describe('attachAuthInterceptor', () => {
     // Adapter: first call 401, second call succeeds
     let firstCall = true;
     (api.defaults as any).adapter = async (config: InternalAxiosRequestConfig) => {
-      if (firstCall) { firstCall = false; throw make401(config); }
+      if (firstCall) {
+        firstCall = false;
+        throw make401(config);
+      }
       return { status: 200, data: { ok: true }, headers: {}, config, statusText: 'OK' } as any;
     };
 
     const opts = {
       baseUrl: 'https://api.example.com',
       getAccessToken: () => token,
-      setAccessToken: (t: string | null) => { token = t; },
+      setAccessToken: (t: string | null) => {
+        token = t;
+      },
       logout: vi.fn(),
     };
 
     // Mock global axios refresh
-    const postSpy = vi.spyOn(axios, 'post').mockResolvedValue({ data: { accessToken: 'newtok' } } as any);
+    const postSpy = vi
+      .spyOn(axios, 'post')
+      .mockResolvedValue({ data: { accessToken: 'newtok' } } as any);
 
     attachAuthInterceptor(api, opts);
 
@@ -49,12 +56,16 @@ describe('attachAuthInterceptor', () => {
     resetSessionFlag();
 
     // Always 401
-    (api.defaults as any).adapter = async (config: InternalAxiosRequestConfig) => { throw make401(config); };
+    (api.defaults as any).adapter = async (config: InternalAxiosRequestConfig) => {
+      throw make401(config);
+    };
 
     const opts = {
       baseUrl: 'https://api.example.com',
       getAccessToken: () => token,
-      setAccessToken: (t: string | null) => { token = t; },
+      setAccessToken: (t: string | null) => {
+        token = t;
+      },
       logout: vi.fn(),
     };
 

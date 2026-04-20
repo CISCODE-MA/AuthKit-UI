@@ -11,7 +11,7 @@ export interface UserProfile {
   /** e.g. ["admin", "manager"] */
   roles: string[];
   permissions?: string[]; // or a more complex shape // ["menus:create","menus:read", …]
-  modules: string[];           // ["menus","inventory"]
+  modules: string[]; // ["menus","inventory"]
   tenantId: string;
   // add more fields as needed
 }

@@ -1,24 +1,23 @@
-import React, { useEffect } from "react";
+import React, { useEffect } from 'react';
 
 export const GoogleCallbackPage: React.FC = () => {
   useEffect(() => {
     // 1) Read tokens from query string
     const params = new URLSearchParams(window.location.search);
-    const accessToken = params.get("accessToken");
-    const refreshToken = params.get("refreshToken");
+    const accessToken = params.get('accessToken');
+    const refreshToken = params.get('refreshToken');
 
     if (accessToken) {
-      localStorage.setItem("authToken", accessToken);
+      localStorage.setItem('authToken', accessToken);
     }
 
     if (refreshToken) {
-      localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem('refreshToken', refreshToken);
     }
 
-    const target =
-      sessionStorage.getItem("postLoginRedirect") || "/";
+    const target = sessionStorage.getItem('postLoginRedirect') || '/';
 
-    sessionStorage.removeItem("postLoginRedirect");
+    sessionStorage.removeItem('postLoginRedirect');
 
     window.location.replace(target);
   }, []);

@@ -155,12 +155,7 @@ export const ProfilePage: React.FC = () => {
                 xmlns="http://www.w3.org/2000/svg"
                 className="text-red-600"
               >
-                <path
-                  d="M12 9V13"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
+                <path d="M12 9V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 <path
                   d="M12 17H12.01"
                   stroke="currentColor"
@@ -184,9 +179,7 @@ export const ProfilePage: React.FC = () => {
             >
               {toast.title}
             </span>
-            {toast.message && (
-              <span className="text-xs text-gray-500">{toast.message}</span>
-            )}
+            {toast.message && <span className="text-xs text-gray-500">{toast.message}</span>}
           </div>
 
           <button
@@ -203,18 +196,8 @@ export const ProfilePage: React.FC = () => {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path
-                d="M18 6L6 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <path
-                d="M6 6L18 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
+              <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
         </div>
@@ -279,12 +262,7 @@ export const ProfilePage: React.FC = () => {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path
-                    d="M12 20H21"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
+                  <path d="M12 20H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   <path
                     d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"
                     stroke="currentColor"
@@ -310,57 +288,52 @@ export const ProfilePage: React.FC = () => {
         <div className="px-6 pb-6 border-t border-gray-100 pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-2">
-                First name
-              </label>
+              <label className="block text-xs font-medium text-gray-500 mb-2">First name</label>
               <input
                 type="text"
                 value={fname}
                 disabled={!isEditing || saving}
                 onChange={(e) => setFname(e.target.value)}
-                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isEditing
+                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${
+                  isEditing
                     ? 'border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
                     : 'border-gray-200 bg-gray-50 text-gray-700'
-                  }`}
+                }`}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-2">
-                Last name
-              </label>
+              <label className="block text-xs font-medium text-gray-500 mb-2">Last name</label>
               <input
                 type="text"
                 value={lname}
                 disabled={!isEditing || saving}
                 onChange={(e) => setLname(e.target.value)}
-                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isEditing
+                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${
+                  isEditing
                     ? 'border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
                     : 'border-gray-200 bg-gray-50 text-gray-700'
-                  }`}
+                }`}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-2">
-                Username
-              </label>
+              <label className="block text-xs font-medium text-gray-500 mb-2">Username</label>
               <input
                 type="text"
                 value={username}
                 disabled={!isEditing || saving}
                 onChange={(e) => setUsername(e.target.value)}
-                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${isEditing
+                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none ${
+                  isEditing
                     ? 'border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
                     : 'border-gray-200 bg-gray-50 text-gray-700'
-                  }`}
+                }`}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-2">
-                Email ID
-              </label>
+              <label className="block text-xs font-medium text-gray-500 mb-2">Email ID</label>
               <input
                 type="email"
                 value={email}
@@ -370,9 +343,7 @@ export const ProfilePage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-2">
-                Mobile number
-              </label>
+              <label className="block text-xs font-medium text-gray-500 mb-2">Mobile number</label>
               <input
                 type="text"
                 value={phone}

@@ -11,7 +11,9 @@ vi.mock('@ciscode/ui-translate-core', () => ({
 
 // SVG imports used in the page
 vi.mock('../../../src/assets/icons/google-icon-svgrepo-com.svg', () => ({ default: 'google.svg' }));
-vi.mock('../../../src/assets/icons/microsoft-svgrepo-com.svg', () => ({ default: 'microsoft.svg' }));
+vi.mock('../../../src/assets/icons/microsoft-svgrepo-com.svg', () => ({
+  default: 'microsoft.svg',
+}));
 
 import { ForgotPasswordPage } from '../../../src/pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '../../../src/pages/auth/ResetPasswordPage';
@@ -46,7 +48,7 @@ const mockAuthState = {
 
 function wrap(
   ui: React.ReactElement,
-  { initialPath = '/', config = baseConfig, authState = mockAuthState } = {}
+  { initialPath = '/', config = baseConfig, authState = mockAuthState } = {},
 ) {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
@@ -57,7 +59,7 @@ function wrap(
           </Routes>
         </AuthStateCtx.Provider>
       </AuthConfigContext.Provider>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 
@@ -83,13 +85,15 @@ describe('ForgotPasswordPage', () => {
     });
     fireEvent.click(screen.getByText('Send Reset Link'));
 
-    await waitFor(() =>
-      expect(screen.getByText(/If the email exists/i)).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText(/If the email exists/i)).toBeInTheDocument());
   });
 
   it('shows inline error when API call fails', async () => {
-    mockApi.post.mockRejectedValueOnce({ isAxiosError: true, message: 'Not found', response: { data: { message: 'Email not found' } } });
+    mockApi.post.mockRejectedValueOnce({
+      isAxiosError: true,
+      message: 'Not found',
+      response: { data: { message: 'Email not found' } },
+    });
     wrap(<ForgotPasswordPage />);
 
     fireEvent.change(screen.getByPlaceholderText('form.emailPlaceholder'), {
@@ -106,7 +110,9 @@ describe('ForgotPasswordPage', () => {
   });
 
   it('renders logo image when logoUrl is provided', () => {
-    wrap(<ForgotPasswordPage />, { config: { ...baseConfig, logoUrl: 'https://logo.example.com/img.png' } as any });
+    wrap(<ForgotPasswordPage />, {
+      config: { ...baseConfig, logoUrl: 'https://logo.example.com/img.png' } as any,
+    });
     const img = screen.getByAltText('Brand Logo');
     expect(img).toHaveAttribute('src', 'https://logo.example.com/img.png');
   });
@@ -189,7 +195,7 @@ describe('GoogleCallbackPage', () => {
         <Routes>
           <Route path="*" element={<GoogleCallbackPage />} />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.getByText(/Finishing Google sign-in/i)).toBeInTheDocument();
   });
@@ -203,13 +209,13 @@ describe('SignInPage', () => {
   });
 
   it('renders sign in form', () => {
-    wrap(<SignInPage {...baseConfig as any} />);
+    wrap(<SignInPage {...(baseConfig as any)} />);
     expect(screen.getAllByText('SignInPage.signIn').length).toBeGreaterThan(0);
   });
 
   it('calls login on form submit', async () => {
     mockAuthState.login.mockResolvedValueOnce(undefined);
-    wrap(<SignInPage {...baseConfig as any} />);
+    wrap(<SignInPage {...(baseConfig as any)} />);
 
     fireEvent.change(screen.getByPlaceholderText('name@company.com'), {
       target: { value: 'user@example.com' },
@@ -219,10 +225,12 @@ describe('SignInPage', () => {
     });
     fireEvent.submit(document.querySelector('form')!);
 
-    await waitFor(() => expect(mockAuthState.login).toHaveBeenCalledWith({
-      email: 'user@example.com',
-      password: 'password123',
-    }));
+    await waitFor(() =>
+      expect(mockAuthState.login).toHaveBeenCalledWith({
+        email: 'user@example.com',
+        password: 'password123',
+      }),
+    );
   });
 
   it('shows error when login fails', async () => {
@@ -231,7 +239,7 @@ describe('SignInPage', () => {
       message: 'Unauthorized',
       response: { data: { message: 'Invalid credentials' } },
     });
-    wrap(<SignInPage {...baseConfig as any} />);
+    wrap(<SignInPage {...(baseConfig as any)} />);
 
     fireEvent.change(screen.getByPlaceholderText('name@company.com'), {
       target: { value: 'bad@example.com' },
@@ -245,7 +253,7 @@ describe('SignInPage', () => {
   });
 
   it('renders oauth provider buttons when configured', () => {
-    wrap(<SignInPage {...baseConfig as any} />, {
+    wrap(<SignInPage {...(baseConfig as any)} />, {
       config: { ...baseConfig, oauthProviders: ['google', 'microsoft'] } as any,
     });
     const imgs = screen.getAllByRole('img');
