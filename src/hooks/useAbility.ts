@@ -1,10 +1,10 @@
 // src/hooks/useAbility.ts
-import { useAuthState } from "../context/AuthStateContext";
+import { useAuthState } from '../context/AuthStateContext';
 
 export function useHasRole(...roles: string[]) {
   const { user } = useAuthState();
   const userRoles = user?.roles ?? [];
-  return roles.some(r => userRoles.includes(r));
+  return roles.some((r) => userRoles.includes(r));
 }
 
 export function useHasModule(moduleName: string) {
@@ -19,5 +19,14 @@ export function useHasModule(moduleName: string) {
 export function useCan(...needed: string[]) {
   const { user } = useAuthState();
   const perms = user?.permissions ?? [];
-  return needed.every(p => perms.includes(p));
+  return needed.every((p) => perms.includes(p));
+}
+
+/**
+ * Returns true if the user has *at least one* of the given permissions.
+ */
+export function useCanAny(...needed: string[]) {
+  const { user } = useAuthState();
+  const perms = user?.permissions ?? [];
+  return needed.some((p) => perms.includes(p));
 }

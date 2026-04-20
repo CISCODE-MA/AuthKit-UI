@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { AuthConfigContext } from '../context/AuthConfigContext';
 import { AuthStateCtx, useAuthState } from '../context/AuthStateContext';
@@ -7,16 +7,16 @@ import { AuthStateCtx, useAuthState } from '../context/AuthStateContext';
 import type { AuthConfigProps } from '../models/AuthConfig';
 import type { UserProfile } from '../models/User';
 
-import { decodeToken } from '../utils/jwtHelpers';
-import { attachAuthInterceptor, resetSessionFlag } from '../utils/attachAuthInterceptor';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { SessionExpiredModal } from '../components/SessionExpiredModal';
+import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
+import { GoogleCallbackPage } from '../pages/auth/GoogleCallbackPage';
+import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
 import { SignInPage } from '../pages/auth/SignInPage';
 import { SignUpPage } from '../pages/auth/SignUpPage';
 import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
-import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { GoogleCallbackPage } from "../pages/auth/GoogleCallbackPage";
-import { ForgotPasswordPage } from "../pages/auth/ForgotPasswordPage";
-import { ResetPasswordPage } from "../pages/auth/ResetPasswordPage";
+import { attachAuthInterceptor, resetSessionFlag } from '../utils/attachAuthInterceptor';
+import { decodeToken } from '../utils/jwtHelpers';
 
 interface Props {
   config: AuthConfigProps;
@@ -24,12 +24,10 @@ interface Props {
 }
 
 /* ---------- tiny in-file route guard ----------------------- */
-const RequireAuth: React.FC<{ children: JSX.Element }> = ({ children }) => {
+const RequireAuth: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { isAuthenticated } = useAuthState();
   const location = useLocation();
-  return isAuthenticated
-    ? children
-    : <Navigate to="/login" state={{ from: location }} replace />;
+  return isAuthenticated ? children : <Navigate to="/login" state={{ from: location }} replace />;
 };
 /* ----------------------------------------------------------- */
 
@@ -37,14 +35,14 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
   const navigate = useNavigate();
 
   /* ── state ─────────────────────────────────────────────── */
-  const [accessToken, setAccessToken] = useState<string | null>(
-    () => localStorage.getItem('authToken')
+  const [accessToken, setAccessToken] = useState<string | null>(() =>
+    localStorage.getItem('authToken'),
   );
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [booting, setBooting] = useState(true);
   const [expired, setExpired] = useState(false);
 
   /* ── Google OAuth callback component (inside AuthProvider so it can touch state) ── */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const GoogleOAuthCallback: React.FC = () => {
     const location = useLocation();
 
@@ -59,17 +57,17 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
           localStorage.setItem('authToken', tokenFromQuery);
           resetSessionFlag();
         } catch (e) {
-          console.error("Failed to decode or store Google access token:", e);
+          console.error('Failed to decode or store Google access token:', e);
         }
       } else {
-        console.error("No accessToken found in Google OAuth callback URL.");
+        console.error('No accessToken found in Google OAuth callback URL.');
       }
 
       const redirectPath = sessionStorage.getItem('postLoginRedirect') || '/';
       sessionStorage.removeItem('postLoginRedirect');
 
       navigate(redirectPath, { replace: true });
-    }, [location.search, navigate]);
+    }, [location.search]);
 
     // No UI needed; this route just processes the tokens then redirects.
     return null;
@@ -96,6 +94,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
   }
 
   /* ── axios + interceptor ───────────────────────────────── */
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const api = useMemo(() => {
     const client = axios.create({
       baseURL: config.baseUrl,
@@ -105,12 +104,11 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     attachAuthInterceptor(client, {
       baseUrl: config.baseUrl,
       getAccessToken: () => accessToken,
-      setAccessToken: t => setAccessToken(t),
+      setAccessToken: (t) => setAccessToken(t),
       logout: () => setExpired(true),
     });
 
     return client;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.baseUrl, accessToken]);
 
   /* ── bootstrap (localStorage → refresh) ────────────────── */
@@ -118,7 +116,6 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     const init = async () => {
       if (accessToken) {
         setUser(decodeToken(accessToken));
-        setBooting(false);
         return;
       }
 
@@ -126,19 +123,18 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
         const { data } = await axios.post(
           `${config.baseUrl}/api/auth/refresh-token`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
         setAccessToken(data.accessToken);
         setUser(decodeToken(data.accessToken));
         localStorage.setItem('authToken', data.accessToken);
       } catch {
         /* no valid refresh cookie – remain logged-out */
-      } finally {
-        setBooting(false);
       }
     };
     init();
-  }, [accessToken, config.baseUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.baseUrl]);
 
   /* ── manual login (email/password client login) ────────── */
   async function login(credentials: { email: string; password: string }) {
@@ -164,7 +160,8 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
       api,
       setUser,
     }),
-    [accessToken, user, api]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [accessToken, user, api],
   );
 
   // Optional boot screen
@@ -180,18 +177,18 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
           <Route
             path="login"
             element={
-              accessToken
-                ? <Navigate to="/" replace />
-                : <SignInPage baseUrl={config.baseUrl} colors={config.colors} />
+              accessToken ? (
+                <Navigate to="/" replace />
+              ) : (
+                <SignInPage baseUrl={config.baseUrl} colors={config.colors} />
+              )
             }
           />
 
           {/* public signup route */}
           <Route
             path="signup"
-            element={
-              accessToken ? <Navigate to="/" replace /> : <SignUpPage />
-            }
+            element={accessToken ? <Navigate to="/" replace /> : <SignUpPage />}
           />
 
           {/* public verify-email route */}
@@ -202,22 +199,13 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
           <Route path="reset-password" element={<ResetPasswordPage />} />
 
           {/* Google OAuth callback route */}
-          <Route
-            path="oauth/google/callback"
-            element={<GoogleCallbackPage />}
-          />
+          <Route path="oauth/google/callback" element={<GoogleCallbackPage />} />
 
           {/* Microsoft OAuth callback route */}
-          <Route
-            path="/oauth/microsoft/callback"
-            element={<GoogleCallbackPage />}
-          />
+          <Route path="/oauth/microsoft/callback" element={<GoogleCallbackPage />} />
 
           {/* everything else protected */}
-          <Route
-            path="*"
-            element={<RequireAuth>{children as JSX.Element}</RequireAuth>}
-          />
+          <Route path="*" element={<RequireAuth>{children as React.ReactElement}</RequireAuth>} />
         </Routes>
 
         {expired && <SessionExpiredModal onConfirm={hardLogout} />}

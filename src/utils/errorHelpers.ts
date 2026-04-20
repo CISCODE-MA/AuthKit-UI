@@ -14,7 +14,7 @@ type ErrorResponse = {
 };
 
 function isAxiosError(err: unknown): err is AxiosError {
-  return !!(err as any)?.isAxiosError;
+  return !!(err as Record<string, unknown>)?.isAxiosError;
 }
 
 /**
@@ -41,7 +41,9 @@ export function extractHttpErrorMessage(err: unknown): string {
     }
 
     if (err instanceof Error && err.message) return err.message;
-  } catch {/* ignore parsing issues */}
+  } catch {
+    /* ignore parsing issues */
+  }
 
   return 'An unexpected error occurred';
 }

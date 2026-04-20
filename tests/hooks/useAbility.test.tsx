@@ -41,7 +41,7 @@ describe('useAbility hooks', () => {
     render(
       <AuthStateCtx.Provider value={value}>
         <Probe />
-      </AuthStateCtx.Provider>
+      </AuthStateCtx.Provider>,
     );
 
     expect(screen.getByTestId('hasRole').textContent).toBe('true');
@@ -54,7 +54,7 @@ describe('useAbility hooks', () => {
     render(
       <AuthStateCtx.Provider value={{ ...value, user: null }}>
         <Probe />
-      </AuthStateCtx.Provider>
+      </AuthStateCtx.Provider>,
     );
 
     const hasRoleEls = screen.getAllByTestId('hasRole');

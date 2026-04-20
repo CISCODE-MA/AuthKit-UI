@@ -1,19 +1,29 @@
 {
-    "compilerOptions": {
-        "target": "es2016",
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "strict": true,
-        "skipLibCheck": true,
-        "jsx": "react",
-        "module": "ESNext",
-        "declaration": true,
-        "declarationMap": true,
-        "sourceMap": true,
-        "outDir": "dist",
-        "moduleResolution": "node",
-        "allowSyntheticDefaultImports": true,
-        "emitDeclarationOnly": false
-    },
-    "include": ["src", "src/models", "src/vite-env.d.ts", "../template-fe-model-users/src/models/table"]
+  "compilerOptions": {
+    "target": "es2016",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "jsx": "react",
+    "module": "ESNext",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "emitDeclarationOnly": false,
+    "paths": {
+      "react": ["../../node_modules/react"],
+      "react-dom": ["../../node_modules/react-dom"],
+      "react-router-dom": ["../../node_modules/react-router-dom"]
+    }
+  },
+  "include": [
+    "src",
+    "src/models",
+    "src/vite-env.d.ts",
+    "../template-fe-model-users/src/models/table"
+  ]
 }

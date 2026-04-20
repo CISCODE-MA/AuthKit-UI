@@ -11,6 +11,7 @@ UI component tasks in progress.
 ## UI-Specific Focus
 
 For UI module tasks, document:
+
 - Component changes (props, behavior)
 - Accessibility considerations
 - Visual/responsive design

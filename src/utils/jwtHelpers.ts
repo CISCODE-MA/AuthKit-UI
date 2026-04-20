@@ -15,11 +15,11 @@ interface RawJwt {
 export function decodeToken(token: string): UserProfile {
   const d = jwtDecode<RawJwt>(token);
   return {
-    id:          d.sub,
-    email:       d.email ?? '',
-    roles:       d.roles ?? [],
+    id: d.sub,
+    email: d.email ?? '',
+    roles: d.roles ?? [],
     permissions: d.permissions ?? [],
-    modules:     d.modules ?? [],
-    tenantId:    d.tenantId ?? '',
+    modules: d.modules ?? [],
+    tenantId: d.tenantId ?? '',
   };
 }

@@ -1,6 +1,6 @@
 //src/contexts/AuthConfigContext.ts
-import React from "react";
-import { AuthConfigProps } from "../models/AuthConfig";
+import React from 'react';
+import { AuthConfigProps } from '../models/AuthConfig';
 
 /**
  * The shape of your config context. We'll store the entire AuthConfig
@@ -14,7 +14,7 @@ export const AuthConfigContext = React.createContext<AuthConfigProps | null>(nul
 export function useAuthConfig(): AuthConfigProps {
   const config = React.useContext(AuthConfigContext);
   if (!config) {
-    throw new Error("useAuthConfig must be used within an AuthConfigProvider");
+    throw new Error('useAuthConfig must be used within an AuthConfigProvider');
   }
   return config;
 }

@@ -1,6 +1,6 @@
 // src/components/actions/SocialButton.tsx
-import * as React from "react";
-import { SocialButtonProps } from "../../models/Type";
+import * as React from 'react';
+import { SocialButtonProps } from '../../models/Type';
 
 export const SocialButton: React.FC<SocialButtonProps> = ({ icon, label }) => {
   return (
@@ -8,7 +8,7 @@ export const SocialButton: React.FC<SocialButtonProps> = ({ icon, label }) => {
       <img
         loading="lazy"
         src={icon}
-        alt={label || ""}
+        alt={label || ''}
         className="object-contain shrink-0 aspect-square w-[26px]"
       />
       {label && (

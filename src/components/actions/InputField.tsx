@@ -1,6 +1,6 @@
 // src/components/actions/InputField.tsx
-import * as React from "react";
-import { InputFieldProps } from "../../models/Type";
+import * as React from 'react';
+import { InputFieldProps } from '../../models/Type';
 
 /**
  * InputField:
@@ -10,9 +10,9 @@ import { InputFieldProps } from "../../models/Type";
  */
 export const InputField: React.FC<InputFieldProps> = ({
   label,
-  type = "text",
+  type = 'text',
   placeholder,
-  color = "",
+  color = '',
   value,
   onChange,
 }) => {

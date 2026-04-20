@@ -5,12 +5,19 @@ import { render, screen } from '@testing-library/react';
 
 // Mock translator to return keys or defaults for stable assertions
 vi.mock('@ciscode/ui-translate-core', () => ({
-  useT: () => ((key: string, opts?: { defaultValue?: string }) => opts?.defaultValue ?? key),
+  useT: () => (key: string, opts?: { defaultValue?: string }) => opts?.defaultValue ?? key,
 }));
 
 // Mock JWT decode to avoid requiring real tokens
 vi.mock('../../src/utils/jwtHelpers', () => ({
-  decodeToken: () => ({ id: 'u', email: '', roles: [], permissions: [], modules: [], tenantId: '' }),
+  decodeToken: () => ({
+    id: 'u',
+    email: '',
+    roles: [],
+    permissions: [],
+    modules: [],
+    tenantId: '',
+  }),
 }));
 
 import axios from 'axios';
@@ -28,7 +35,7 @@ function renderWithRouter(initialPath: string, children: React.ReactNode) {
       <Routes>
         <Route path="/*" element={<AuthProvider config={config}>{children}</AuthProvider>} />
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 }
 

@@ -1,6 +1,6 @@
 // src/context/RbacContext.ts
 import React from 'react';
-import { useCan, useHasRole } from '../hooks/useAbility';
+import { useCanAny, useHasRole } from '../hooks/useAbility';
 
 /** A single rule */
 export interface RbacRule {
@@ -20,10 +20,14 @@ export const RbacProvider = RbacContext.Provider;
 /* helper hook that libraries call */
 export function useGrant(feature: string, action: string) {
   const table = React.useContext(RbacContext);
-  const rule  = table[feature]?.[action];
-  if (!rule) return false;                    // no rule = no access
+  const rule = table[feature]?.[action];
 
-  if (rule.perms?.some(p => useCan(p)))           return true;
-  if (rule.fallbackRoles?.some(r => useHasRole(r))) return true;
+  // Hooks must be called unconditionally before any early return
+  const canByPerm = useCanAny(...(rule?.perms ?? []));
+  const canByRole = useHasRole(...(rule?.fallbackRoles ?? []));
+
+  if (!rule) return false;
+  if (canByPerm) return true;
+  if (canByRole) return true;
   return false;
 }
