@@ -24,7 +24,7 @@ interface Props {
 }
 
 /* ---------- tiny in-file route guard ----------------------- */
-const RequireAuth: React.FC<{ children: JSX.Element }> = ({ children }) => {
+const RequireAuth: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { isAuthenticated } = useAuthState();
   const location = useLocation();
   return isAuthenticated
@@ -215,7 +215,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
           {/* everything else protected */}
           <Route
             path="*"
-            element={<RequireAuth>{children as JSX.Element}</RequireAuth>}
+            element={<RequireAuth>{children as React.ReactElement}</RequireAuth>}
           />
         </Routes>
 
