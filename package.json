@@ -47,6 +47,9 @@
     "react-router": "^7.0.0",
     "react-router-dom": "^7.0.0"
   },
+  "overrides": {
+    "follow-redirects": ">=1.15.12"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@testing-library/jest-dom": "^6.9.1",
@@ -58,6 +61,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^2.1.8",
     "autoprefixer": "^10.4.20",
+    "axios": ">=1.14.1",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
