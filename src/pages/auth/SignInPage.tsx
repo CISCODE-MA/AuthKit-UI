@@ -1,17 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { InputField } from "../../components/actions/InputField";
-import { SocialButton } from "../../components/actions/SocialButton";
+import { useT } from "@ciscode/ui-translate-core";
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import googleIcon from "../../assets/icons/google-icon-svgrepo-com.svg";
 import microsoftIcon from "../../assets/icons/microsoft-svgrepo-com.svg";
-import { toTailwindColorClasses } from "../../utils/colorHelpers";
+import { InputField } from "../../components/actions/InputField";
+import { SocialButton } from "../../components/actions/SocialButton";
+import { InlineError } from "../../components/InlineError";
 import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
-import { InlineError } from "../../components/InlineError";
-import { extractHttpErrorMessage } from "../../utils/errorHelpers";
 import { AuthConfigProps } from "../../models/AuthConfig";
-import { useT } from "@ciscode/ui-translate-core";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Link } from "react-router-dom"
+import { toTailwindColorClasses } from "../../utils/colorHelpers";
+import { extractHttpErrorMessage } from "../../utils/errorHelpers";
 
 export const SignInPage: React.FC<AuthConfigProps> = () => {
   const t = useT("authLib");
@@ -32,6 +31,7 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
       description: t("community.description"),
     },
     baseUrl, // IMPORTANT: used for Google OAuth redirect
+    customSignUpUrl
   } = useAuthConfig();
 
   const { login } = useAuthState();
@@ -39,15 +39,12 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  // Show any provider-level error surfaced by the interceptor (e.g., refresh failures)
-  useEffect(() => {
+  // Read and clear any provider-level error at mount time via initializer (avoids set-state-in-effect)
+  const [error, setError] = useState<string | null>(() => {
     const msg = sessionStorage.getItem('authErrorMessage');
-    if (msg) {
-      setError(msg);
-      sessionStorage.removeItem('authErrorMessage');
-    }
-  }, []);
+    if (msg) sessionStorage.removeItem('authErrorMessage');
+    return msg;
+  });
 
   const allProvidersData = {
     google: { icon: googleIcon, label: t("social.google") },
@@ -72,7 +69,7 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
     setPending(true);
     try {
       await login({ email, password });
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg = extractHttpErrorMessage(err);
       setError(msg);
     } finally {
@@ -89,10 +86,9 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
     // Where to go AFTER successful OAuth login.
     // If user was redirected here from a protected page, use that;
     // otherwise, default to root "/".
+    const state = location.state as { from?: { pathname?: string } | string } | null;
     const from =
-      (location.state as any)?.from?.pathname ||
-      (location.state as any)?.from ||
-      "/";
+      (typeof state?.from === 'object' ? state?.from?.pathname : state?.from) ?? "/";
 
     // Save post-login redirect so callback route can restore it.
     sessionStorage.setItem("postLoginRedirect", from);
@@ -112,10 +108,10 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
     if (providerId === "microsoft") {
       const callbackPath = "/api/oauth/microsoft/callback";
       const callbackUrl = `${window.location.origin}${callbackPath}`;
-  
+
       const url = new URL(`${baseUrl}/api/auth/microsoft`);
       url.searchParams.set("redirect", callbackUrl);
-  
+
       window.location.href = url.toString();
       return;
     }
@@ -211,7 +207,7 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
               <br />
               <button
                 type="button"
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate(customSignUpUrl || "/signup")}
                 className={textClass}
               >
                 {t("SignInPage.signUp")}
@@ -223,9 +219,9 @@ export const SignInPage: React.FC<AuthConfigProps> = () => {
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <InputField
-              label={t("form.emailLabel")}
+              label={t("form.emailLabel", { defaultValue: "Email" })}
               type="email"
-              placeholder={t("form.emailPlaceholder")}
+              placeholder={t("form.emailPlaceholder", { defaultValue: "name@company.com" })}
               color={borderClass}
               value={email}
               onChange={setEmail}

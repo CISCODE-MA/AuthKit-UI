@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { AuthConfigContext } from '../context/AuthConfigContext';
 import { AuthStateCtx, useAuthState } from '../context/AuthStateContext';
@@ -7,16 +7,16 @@ import { AuthStateCtx, useAuthState } from '../context/AuthStateContext';
 import type { AuthConfigProps } from '../models/AuthConfig';
 import type { UserProfile } from '../models/User';
 
-import { decodeToken } from '../utils/jwtHelpers';
-import { attachAuthInterceptor, resetSessionFlag } from '../utils/attachAuthInterceptor';
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { SessionExpiredModal } from '../components/SessionExpiredModal';
+import { ForgotPasswordPage } from "../pages/auth/ForgotPasswordPage";
+import { GoogleCallbackPage } from "../pages/auth/GoogleCallbackPage";
+import { ResetPasswordPage } from "../pages/auth/ResetPasswordPage";
 import { SignInPage } from '../pages/auth/SignInPage';
 import { SignUpPage } from '../pages/auth/SignUpPage';
 import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage';
-import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { GoogleCallbackPage } from "../pages/auth/GoogleCallbackPage";
-import { ForgotPasswordPage } from "../pages/auth/ForgotPasswordPage";
-import { ResetPasswordPage } from "../pages/auth/ResetPasswordPage";
+import { attachAuthInterceptor, resetSessionFlag } from '../utils/attachAuthInterceptor';
+import { decodeToken } from '../utils/jwtHelpers';
 
 interface Props {
   config: AuthConfigProps;
@@ -24,7 +24,7 @@ interface Props {
 }
 
 /* ---------- tiny in-file route guard ----------------------- */
-const RequireAuth: React.FC<{ children: JSX.Element }> = ({ children }) => {
+const RequireAuth: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { isAuthenticated } = useAuthState();
   const location = useLocation();
   return isAuthenticated
@@ -41,10 +41,10 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     () => localStorage.getItem('authToken')
   );
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [booting, setBooting] = useState(true);
   const [expired, setExpired] = useState(false);
 
   /* ── Google OAuth callback component (inside AuthProvider so it can touch state) ── */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const GoogleOAuthCallback: React.FC = () => {
     const location = useLocation();
 
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
       sessionStorage.removeItem('postLoginRedirect');
 
       navigate(redirectPath, { replace: true });
-    }, [location.search, navigate]);
+    }, [location.search]);
 
     // No UI needed; this route just processes the tokens then redirects.
     return null;
@@ -96,6 +96,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
   }
 
   /* ── axios + interceptor ───────────────────────────────── */
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const api = useMemo(() => {
     const client = axios.create({
       baseURL: config.baseUrl,
@@ -110,7 +111,6 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     });
 
     return client;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.baseUrl, accessToken]);
 
   /* ── bootstrap (localStorage → refresh) ────────────────── */
@@ -118,7 +118,6 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
     const init = async () => {
       if (accessToken) {
         setUser(decodeToken(accessToken));
-        setBooting(false);
         return;
       }
 
@@ -133,12 +132,11 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
         localStorage.setItem('authToken', data.accessToken);
       } catch {
         /* no valid refresh cookie – remain logged-out */
-      } finally {
-        setBooting(false);
       }
     };
     init();
-  }, [accessToken, config.baseUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.baseUrl]);
 
   /* ── manual login (email/password client login) ────────── */
   async function login(credentials: { email: string; password: string }) {
@@ -164,6 +162,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
       api,
       setUser,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [accessToken, user, api]
   );
 
@@ -216,7 +215,7 @@ export const AuthProvider: React.FC<Props> = ({ config, children }) => {
           {/* everything else protected */}
           <Route
             path="*"
-            element={<RequireAuth>{children as JSX.Element}</RequireAuth>}
+            element={<RequireAuth>{children as React.ReactElement}</RequireAuth>}
           />
         </Routes>
 

@@ -13,7 +13,12 @@
         "outDir": "dist",
         "moduleResolution": "node",
         "allowSyntheticDefaultImports": true,
-        "emitDeclarationOnly": false
+        "emitDeclarationOnly": false,
+        "paths": {
+            "react": ["../../node_modules/react"],
+            "react-dom": ["../../node_modules/react-dom"],
+            "react-router-dom": ["../../node_modules/react-router-dom"]
+        }
     },
     "include": ["src", "src/models", "src/vite-env.d.ts", "../template-fe-model-users/src/models/table"]
 }

@@ -39,10 +39,10 @@ export function attachAuthInterceptor(api: AxiosInstance, opts: Options) {
         res => res,
         async (err: AxiosError) => {
             const original = err.config as AxiosRequestConfig | undefined;
-            if (err.response?.status !== 401 || !original || (original as any)._retry) {
+            if (err.response?.status !== 401 || !original || (original as AxiosRequestConfig & { _retry?: boolean })._retry) {
                 return Promise.reject(err);
             }
-            (original as any)._retry = true;
+            (original as AxiosRequestConfig & { _retry?: boolean })._retry = true;
 
             /* first request to notice the 401 */
             if (!refreshing) {

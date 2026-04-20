@@ -5,10 +5,11 @@ import { render, screen } from '@testing-library/react';
 vi.mock('../../src/hooks/useAbility', () => ({
   useCan: vi.fn(() => false),
   useHasRole: vi.fn(() => false),
+  useCanAny: vi.fn(() => false),
 }));
 
 import { RbacProvider, useGrant } from '../../src/context/RbacContext';
-import { useCan, useHasRole } from '../../src/hooks/useAbility';
+import { useCanAny, useHasRole } from '../../src/hooks/useAbility';
 
 function Probe({ feature, action }: { feature: string; action: string }) {
   const allowed = useGrant(feature, action);
@@ -33,7 +34,7 @@ describe('RbacContext useGrant', () => {
   });
 
   it('grants by permissions when useCan returns true', () => {
-    (useCan as any).mockReturnValueOnce(true);
+    (useCanAny as ReturnType<typeof vi.fn>).mockReturnValueOnce(true);
     render(
       <RbacProvider value={table}>
         <Probe feature="users" action="view" />
@@ -43,7 +44,7 @@ describe('RbacContext useGrant', () => {
   });
 
   it('grants by fallback roles when useHasRole returns true', () => {
-    (useHasRole as any).mockReturnValueOnce(true);
+    (useHasRole as ReturnType<typeof vi.fn>).mockReturnValueOnce(true);
     render(
       <RbacProvider value={table}>
         <Probe feature="users" action="delete" />

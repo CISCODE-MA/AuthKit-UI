@@ -1,15 +1,15 @@
+import { useT } from "@ciscode/ui-translate-core";
 import React, { useState } from "react";
-import { InputField } from "../../components/actions/InputField";
-import { SocialButton } from "../../components/actions/SocialButton";
+import { useLocation, useNavigate } from "react-router-dom";
 import googleIcon from "../../assets/icons/google-icon-svgrepo-com.svg";
 import microsoftIcon from "../../assets/icons/microsoft-svgrepo-com.svg";
-import { toTailwindColorClasses } from "../../utils/colorHelpers";
+import { InputField } from "../../components/actions/InputField";
+import { SocialButton } from "../../components/actions/SocialButton";
+import { InlineError } from "../../components/InlineError";
 import { useAuthConfig } from "../../context/AuthConfigContext";
 import { useAuthState } from "../../context/AuthStateContext";
-import { InlineError } from "../../components/InlineError";
+import { toTailwindColorClasses } from "../../utils/colorHelpers";
 import { extractHttpErrorMessage } from "../../utils/errorHelpers";
-import { useT } from "@ciscode/ui-translate-core";
-import { useNavigate, useLocation } from "react-router-dom";
 
 export const SignUpPage: React.FC = () => {
   const t = useT("authLib");
@@ -30,6 +30,9 @@ export const SignUpPage: React.FC = () => {
       description: t("community.description"),
     },
     baseUrl, // IMPORTANT: used for OAuth redirect (same as SignIn)
+    signUpCustomFields = [],
+    signUpEndpoint = "/api/auth/register",
+    signUpTransformPayload,
   } = useAuthConfig();
 
   const { api } = useAuthState();
@@ -42,6 +45,14 @@ export const SignUpPage: React.FC = () => {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [agreed, setAgreed] = useState(false);
+
+  const [customValues, setCustomValues] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    signUpCustomFields.forEach(f => {
+      init[f.name] = f.defaultValue || "";
+    });
+    return init;
+  });
 
   const allProvidersData = {
     google: { icon: googleIcon, label: t("social.google") },
@@ -67,23 +78,36 @@ export const SignUpPage: React.FC = () => {
     setPending(true);
 
     try {
-      // 1) Register the user
-      const { data } = await api.post("/api/auth/register", {
+      let payload: Record<string, unknown> = {
         fullname: { fname, lname },
         username,
         email,
         password,
-      });
+        ...customValues
+      };
 
-      // 2) Redirect to verify email page (no auto-login)
+      if (signUpTransformPayload) {
+        payload = signUpTransformPayload(payload);
+      }
+
+      // 1) Register the user dynamically
+      const { data } = await api.post(signUpEndpoint, payload);
+
+      // 2) Redirect based on API response
+      // Either verify email or go to login
       if (data?.emailSent) {
         navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
         return;
+      } else if (signUpEndpoint !== '/api/auth/register') {
+        // Assume custom wizard flow implies a redirect to login when email verify is bypassed
+        navigate('/login?registered=true', { replace: true });
+        return;
       }
+
       // Fallback: still guide user to verify page
       navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
       return;
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg = extractHttpErrorMessage(err);
       setError(msg);
     } finally {
@@ -98,10 +122,9 @@ export const SignUpPage: React.FC = () => {
     }
 
     // Where to go AFTER successful OAuth login.
+    const state = location.state as { from?: { pathname?: string } | string } | null;
     const from =
-      (location.state as any)?.from?.pathname ||
-      (location.state as any)?.from ||
-      "/";
+      (typeof state?.from === 'object' ? state?.from?.pathname : state?.from) ?? "/";
 
     // Save post-login redirect so callback route can restore it.
     sessionStorage.setItem("postLoginRedirect", from);
@@ -263,9 +286,9 @@ export const SignUpPage: React.FC = () => {
               onChange={setUsername}
             />
             <InputField
-              label={t("form.emailLabel")}
+              label={t("form.emailLabel", { defaultValue: "Email" })}
               type="email"
-              placeholder={t("form.emailPlaceholder")}
+              placeholder={t("form.emailPlaceholder", { defaultValue: "name@company.com" })}
               color={borderClass}
               value={email}
               onChange={setEmail}
@@ -279,6 +302,37 @@ export const SignUpPage: React.FC = () => {
               onChange={setPassword}
             />
 
+            {signUpCustomFields?.map((field) => {
+              if (field.type === 'select') {
+                return (
+                  <div key={field.name} className="flex flex-col w-full relative">
+                    <label className="text-sm font-medium pb-2 text-gray-700">
+                      {field.label}
+                    </label>
+                    <select
+                      value={customValues[field.name]}
+                      onChange={(e) => setCustomValues({ ...customValues, [field.name]: e.target.value })}
+                      className={`flex w-full items-center px-3 py-2 text-sm justify-between shadow-sm rounded-lg border focus:border-2 bg-white ${borderClass} hover:border-gray-200 hover:shadow-md focus:outline-none focus:ring-0`}
+                      required={field.required}
+                    >
+                      <option value="" disabled hidden>Select an option</option>
+                      {field.options?.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                    </select>
+                  </div>
+                );
+              }
+              return (
+                <InputField
+                  key={field.name}
+                  label={field.label}
+                  type={field.type as 'text' | 'email' | 'password' | 'number' | 'tel'}
+                  placeholder={field.placeholder || ''}
+                  color={borderClass}
+                  value={customValues[field.name]}
+                  onChange={(val) => setCustomValues({ ...customValues, [field.name]: val })}
+                />
+              );
+            })}
 
             <div className="flex items-center gap-2">
               <input

@@ -14,7 +14,7 @@ type ErrorResponse = {
 };
 
 function isAxiosError(err: unknown): err is AxiosError {
-  return !!(err as any)?.isAxiosError;
+  return !!(err as Record<string, unknown>)?.isAxiosError;
 }
 
 /**
